@@ -11,5 +11,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/src)
 add_subdirectory(src)
 
-# Given template
-add_subdirectory(third_party/libull)
+# Google Test
+add_subdirectory(test)
+add_subdirectory(depends/googletest)
+
