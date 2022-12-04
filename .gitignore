@@ -1,0 +1,13 @@
+# IDE files
+.cache/
+.vscode/
+
+# CMake build files
+build/
+
+# Input files
+samples/
+
+# Output files
+bin/
+lib/
