@@ -1,6 +1,12 @@
 set(PROJECT_NAME ${CMAKE_PROJECT_NAME})
 
-aux_source_directory(. SRC_LIST)
+file(GLOB SRC_LIST
+    *.cc
+    book/*.cc
+    file/*.cc
+    tools/*.cc
+    user/*.cc
+)
 
 add_executable(${PROJECT_NAME}_run ${SRC_LIST})
 

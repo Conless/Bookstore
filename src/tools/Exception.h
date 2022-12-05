@@ -1,6 +1,9 @@
 #include <string>
 
-enum ExceptionType { INVALID_INPUT };
+enum ExceptionType {
+    INVALID_INPUT,
+    UNIMPLEMENTED
+};
 
 struct Exception {
     ExceptionType opt;
