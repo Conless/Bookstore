@@ -1,25 +1,33 @@
-#include <bits/stdc++.h>
+#include <array>
+#include <cstdio>
+#include <cstring>
+#include <string>
 
-#include "Bookstore/BlockList.h"
+#include "ull.h"
 
-using namespace std;
+int nextInt() {
+    int x;
+    scanf("%d", &x);
+    return x;
+}
+
+String nextString() {
+    String x;
+    scanf("%s", x.buf);
+    return x;
+}
 
 int main() {
-    bookstore::list::BlockList<std::string, int> store;
-    int n;
-    cin >> n;
-    for (int i = 0; i < n; ++i) {
-        std::string cmd;
-        cin >> cmd;
+    UnrolledLinkedList store("data");
+    auto n = nextInt();
+    for (auto i = 0; i < n; ++i) {
+        auto cmd = std::string(nextString().buf);
         if (cmd == "insert") {
-            std::string key;
-            cin >> key;
-            int value;
-            cin >> value;
+            auto key = nextString();
+            auto value = nextInt();
             store.insert(key, value);
         } else if (cmd == "find") {
-            string key;
-            cin >> key;
+            auto key = nextString();
             auto values = store.find(key);
             if (values.empty()) {
                 puts("null");
@@ -30,9 +38,8 @@ int main() {
                 putchar('\n');
             }
         } else if (cmd == "delete") {
-            string key;
-            int value;
-            cin >> key >> value;
+            auto key = nextString();
+            auto value = nextInt();
             store.remove(key, value);
         }
     }

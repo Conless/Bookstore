@@ -3,7 +3,8 @@
 enum ExceptionType {
     INVALID_INPUT,
     UNIMPLEMENTED,
-    UNKNOWN
+    UNKNOWN,
+    QUIT_SYSTEM
 };
 
 struct Exception {

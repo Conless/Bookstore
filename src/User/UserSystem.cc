@@ -4,7 +4,7 @@ namespace bookstore {
 
 namespace user {
 
-UserSystem::UserSystem() {
+UserSystem::UserSystem() : uid_table("data/user/uid_table.dat") {
     // TODO
 }
 UserSystem::~UserSystem() {

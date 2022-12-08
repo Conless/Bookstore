@@ -1,8 +1,8 @@
 #ifndef BOOKSTORE_H
 #define BOOKSTORE_H
 
-#include "Bookstore/BookSystem.h"
-#include "Bookstore/UserSystem.h"
+#include "Book/BookSystem.h"
+#include "User/UserSystem.h"
 #include <vector>
 
 namespace bookstore {
@@ -46,16 +46,24 @@ enum FunctionData {
     IMPORT_DEF
 };
 
-typedef std::vector<std::string> Parameter;
-
-struct InputMsg {
-    Function func;
-    FunctionData info;
-    Parameter args;
-    InputMsg(Function func, FunctionData info, Parameter args) : func(func), info(info), args(args) {}
+class BookstoreLexer : public std::vector<std::string> {
+  public:
+    BookstoreLexer() {}
+    BookstoreLexer(const std::string &str_in_line, char divide_opt = ' ');
 };
 
-}
+class BookstoreParser {
+  public:
+    Function func;
+    FunctionData info;
+    BookstoreLexer args;
+    BookstoreParser(Function func, FunctionData info, BookstoreLexer args) : func(func), info(info), args(args) {}
+
+  public:
+    BookstoreParser(const BookstoreLexer &input);
+};
+
+} // namespace input
 
 class Bookstore {
   public:
@@ -64,7 +72,7 @@ class Bookstore {
 
     void ReadData();
     void PrintData();
-    void AcceptMsg(input::InputMsg);
+    void AcceptMsg(input::BookstoreParser);
 
   private:
     user::UserSystem users;
