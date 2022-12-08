@@ -1,47 +1,40 @@
-#include <array>
-#include <cstdio>
-#include <cstring>
-#include <string>
+#include <bits/stdc++.h>
 
-#include "ull.h"
+#include "Bookstore/BlockList.h"
 
-int nextInt () {
-  int x;
-  scanf("%d", &x);
-  return x;
-}
+using namespace std;
 
-String nextString () {
-  String x;
-  scanf("%s", x.buf);
-  return x;
-}
-
-int main () {
-  UnrolledLinkedList store {"data"};
-  auto n = nextInt();
-  for (auto i = 0; i < n; ++i) {
-    auto cmd = std::string(nextString().buf);
-    if (cmd == "insert") {
-      auto key = nextString();
-      auto value = nextInt();
-      store.insert(key, value);
-    } else if (cmd == "find") {
-      auto key = nextString();
-      auto values = store.find(key);
-      if (values.empty()) {
-        puts("null");
-      } else {
-        for (auto v : values) {
-          printf("%d ", v);
+int main() {
+    bookstore::list::BlockList<std::string, int> store;
+    int n;
+    cin >> n;
+    for (int i = 0; i < n; ++i) {
+        std::string cmd;
+        cin >> cmd;
+        if (cmd == "insert") {
+            std::string key;
+            cin >> key;
+            int value;
+            cin >> value;
+            store.insert(key, value);
+        } else if (cmd == "find") {
+            string key;
+            cin >> key;
+            auto values = store.find(key);
+            if (values.empty()) {
+                puts("null");
+            } else {
+                for (auto v : values) {
+                    printf("%d ", v);
+                }
+                putchar('\n');
+            }
+        } else if (cmd == "delete") {
+            string key;
+            int value;
+            cin >> key >> value;
+            store.remove(key, value);
         }
-        putchar('\n');
-      }
-    } else if (cmd == "delete") {
-      auto key = nextString();
-      auto value = nextInt();
-      store.remove(key, value);
     }
-  }
-  return 0;
+    return 0;
 }
