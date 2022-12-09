@@ -6,8 +6,8 @@ namespace bookstore {
 
 namespace list {
 
-typedef char KeyType[12];
-typedef unsigned short DataType;
+typedef char KeyType[72];
+typedef int DataType;
 
 const size_t kSizeofKey = sizeof(KeyType);
 const size_t kSizeofData = sizeof(DataType);
