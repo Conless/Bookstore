@@ -11,5 +11,9 @@ UserSystem::~UserSystem() {
     // TODO
 }
 
+int UserSystem::QueryUnum(const std::string &user_id) {
+    // std::vector<int> ret = uid_table.find(String(user_id));
+}
+
 } // namespace user
 } // namespace bookstore

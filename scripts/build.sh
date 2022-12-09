@@ -1,4 +1,4 @@
 #!/bin/bash
 cd build
-cmake ..
+# cmake ..
 make -j 16

@@ -172,7 +172,7 @@ Bookstore::~Bookstore() {
 void Bookstore::AcceptMsg(input::BookstoreParser msg) {
     using namespace input;
     if (msg.func == QUIT)
-        throw Exception(QUIT_SYSTEM, "");
+        throw Exception(QUIT_SYSTEM, "Quit.");
     if (msg.func == SU) {
         std::string user_id = msg.args[0];
         // int num = users.QueryUnum(user_id);
@@ -180,6 +180,9 @@ void Bookstore::AcceptMsg(input::BookstoreParser msg) {
         if (msg.info == SU_NO_PASSWD) {
 
         }
+    }
+    if (msg.func == REG) {
+        // users.UserRegister(msg.args[0], msg.args[1], msg.args[2]);
     }
     throw Exception(UNIMPLEMENTED, "Bookstore doesn't support this operation.");
 }
