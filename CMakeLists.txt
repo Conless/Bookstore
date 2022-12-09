@@ -14,7 +14,7 @@
 # # Test
 # add_subdirectory(test)
 # add_subdirectory(depends/googletest)
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.15)
 project(Bookstore)
 
 set(CMAKE_CXX_FLAGS "-Ofast")
