@@ -3,7 +3,7 @@
 #include "List/UnrolledLinkedList.h"
 
 int main() {
-    bookstore::list::UnrolledLinkedList l("test.dat");
+    bookstore::list::UnrolledLinkedList l("test", true);
     int T;
     std::cin >> T;
     while (T--) {
@@ -17,7 +17,7 @@ int main() {
         } else if (opt == "find") {
             std::string s;
             std::cin >> s;
-            std::vector<bookstore::list::DataType> ret = l.find(s);
+            std::vector<int> ret = l.find(s);
             if (!ret.size())
                 std::cout << "null";
             else {
