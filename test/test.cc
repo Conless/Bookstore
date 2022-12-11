@@ -25,7 +25,7 @@ int main() {
                     std::cout << i << ' ';
             }
             std::cout << '\n';
-        } else if (opt == "erase") {
+        } else if (opt == "delete") {
             std::string s;
             int data;
             std::cin >> s >> data;

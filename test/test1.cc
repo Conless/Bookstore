@@ -1,22 +1,93 @@
-#include "UnrolledLinkedList.h"
-
-#include <cstring>
-#include <iostream>
-
-#include "Utils/Exception.h"
+#include <fstream>
+#include <string>
+#include <vector>
 
 namespace bookstore {
 
 namespace list {
 
-UnrolledLinkedList::UnrolledLinkedList(const std::string file_name) {
-    std::ofstream create(file_name);
-    create.close();
-    file.open(file_name, std::ios::in | std::ios::out);
+typedef char KeyType[72];
+typedef int DataType;
+
+const size_t kSizeofKey = sizeof(KeyType);
+const size_t kSizeofData = sizeof(DataType);
+const size_t kSizeofLine = kSizeofKey + kSizeofData * 2;
+
+struct Line {
+    std::string key;
+    DataType pos, data, next;
+    Line() = default;
+    Line(std::string key, DataType pos, DataType data, DataType next = 0) : key(key), pos(pos), data(data), next(next) {}
+};
+
+class UnrolledLinkedList {
+  public:
+    const DataType max_list_size = 1000;
+    std::vector<DataType> head, tail, siz;
+    std::string file_name;
+    DataType cnt;
+    std::fstream file;
+
+    Line ReadLine(DataType pos);
+    void WriteLine(DataType pos, Line now);
+    DataType InsertData(DataType pos, const std::string key, DataType num, DataType data);
+    void Simplify();
+    void Output();
+
+    //   public:
+    UnrolledLinkedList(const std::string file_name);
+    ~UnrolledLinkedList();
+    void insert(const std::string key, DataType data);
+    std::vector<DataType> find(const std::string key);
+    void erase(const std::string key, DataType data);
+};
+
+} // namespace list
+} // namespace bookstore
+
+// #include "UnrolledLinkedList.h"
+
+#include <cstring>
+#include <iostream>
+
+// #include "Utils/Exception.h"
+
+namespace bookstore {
+
+namespace list {
+
+UnrolledLinkedList::UnrolledLinkedList(const std::string file_name) : file_name(file_name) {
+    std::ifstream input(file_name + ".bin");
     cnt = 0;
+    head.clear();
+    tail.clear();
+    siz.clear();
+    if (input.good()) {
+        input.close();
+        input.open(file_name + ".dat");
+        int len;
+        input >> cnt >> len;
+        for (int i = 0; i < len; i++) {
+            int head_num, tail_num, siz_num;
+            input >> head_num >> tail_num >> siz_num;
+            head.push_back(head_num);
+            tail.push_back(tail_num);
+            siz.push_back(siz_num);
+        }
+    } else {
+        std::ofstream create(file_name + ".bin");
+    }
+    file.open(file_name + ".bin", std::ios::in | std::ios::out);
 }
 
-UnrolledLinkedList::~UnrolledLinkedList() {}
+UnrolledLinkedList::~UnrolledLinkedList() {
+    std::ofstream output(file_name + ".dat", std::ios::out | std::ios::trunc);
+    int len = head.size();
+    output << cnt << " " << len << '\n';
+    for (int i = 0; i < len; i++)
+        output << head[i] << ' ' << tail[i] << ' ' << siz[i] << '\n';
+    output.close();
+}
 
 Line UnrolledLinkedList::ReadLine(DataType pos) {
     // file.open(file_path, std::ios::in);
@@ -167,7 +238,8 @@ std::vector<DataType> UnrolledLinkedList::find(const std::string key) {
 }
 void UnrolledLinkedList::erase(const std::string key, DataType data) {
     if (!cnt)
-        throw Exception(UNKNOWN, "Not found such data.");
+        return;
+    // throw Exception(UNKNOWN, "Not found such data.");
     DataType len = head.size();
     for (DataType i = 0; i < len; i++) {
         Line now = ReadLine(head[i]);
@@ -217,3 +289,40 @@ void UnrolledLinkedList::erase(const std::string key, DataType data) {
 } // namespace list
 
 } // namespace bookstore
+
+#include <algorithm>
+
+int main() {
+    bookstore::list::UnrolledLinkedList l("test");
+    int T;
+    std::cin >> T;
+    while (T--) {
+        std::string opt;
+        std::cin >> opt;
+        if (opt == "insert") {
+            std::string s;
+            int data;
+            std::cin >> s >> data;
+            l.insert(s, data);
+        } else if (opt == "find") {
+            std::string s;
+            std::cin >> s;
+            std::vector<bookstore::list::DataType> ret = l.find(s);
+            std::sort(ret.begin(), ret.end());
+            if (!ret.size())
+                std::cout << "null";
+            else {
+                for (auto i : ret)
+                    std::cout << i << ' ';
+            }
+            std::cout << '\n';
+        } else if (opt == "delete") {
+            std::string s;
+            int data;
+            std::cin >> s >> data;
+            l.erase(s, data);
+        }
+        // l.Output();
+    }
+    return 0;
+}

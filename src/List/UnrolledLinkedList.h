@@ -22,7 +22,7 @@ struct Line {
 
 class UnrolledLinkedList {
   private:
-    const DataType max_list_size = 100;
+    const DataType max_list_size = 5;
     std::vector<DataType> head, tail, siz;
     DataType cnt;
     std::fstream file;
