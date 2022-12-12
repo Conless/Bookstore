@@ -500,7 +500,7 @@ void UnrolledLinkedList::erase(const std::string key, DataType data) {
 
 
 int main() {
-    bookstore::list::UnrolledLinkedList l("test", true);
+    bookstore::list::UnrolledLinkedList l("test", false);
     int T;
     std::cin >> T;
     while (T--) {
