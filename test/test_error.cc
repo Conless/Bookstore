@@ -34,7 +34,7 @@ namespace list {
 class UnrolledLinkedList {
   private:
     // The type of key
-    typedef char KeyType[10];
+    typedef char KeyType[72];
 
     // The type of data
     typedef int DataType;
@@ -254,16 +254,14 @@ UnrolledLinkedList::Node UnrolledLinkedList::ReadNode(IndexType pos) {
     Node ret;
     ret.pos = pos;
     // Move the read head, (pos - 1) suggests that the selected data is located at the (pos - 1)th node of binary file
-    file.seekg((pos - 1) * kSizeofNode);
-    double sec = (double)clock() / CLOCKS_PER_SEC;
-    rd_time += 1.0;
+    file.seekg((pos - 1) * sizeof(ret));
 
     // Inputing...
     KeyType str;
-    file.read(str, kSizeofKey);
-    ret.key = str;
-    file.read(reinterpret_cast<char *>(&ret.data), kSizeofData);
-    file.read(reinterpret_cast<char *>(&ret.next), kSizeofIndex);
+    int a = file.tellg();
+    file.read(reinterpret_cast<char *>(&ret), sizeof(ret));
+    double sec = (double)clock() / CLOCKS_PER_SEC;
+    rd_time += sec - fir;
     return ret;
 }
 
@@ -281,14 +279,13 @@ void UnrolledLinkedList::WriteNode(IndexType pos, Node now) {
     }
     double fir = (double)clock() / CLOCKS_PER_SEC;
     // Move the write head, (pos - 1) suggests that the selected data is located at the (pos - 1)th node of binary file
-    file.seekp((pos - 1) * kSizeofNode);
+    file.seekp((pos - 1) * sizeof(now));
 
     // Outputing...
-    KeyType key_str;
-    strcpy(key_str, now.key.c_str());
-    file.write(key_str, kSizeofKey);
-    file.write(reinterpret_cast<char *>(&now.data), kSizeofData);
-    file.write(reinterpret_cast<char *>(&now.next), kSizeofIndex);
+    file.write(reinterpret_cast<char *>(&now), sizeof(now));
+    file.seekg((pos - 1) * sizeof(now));
+    int a = file.tellg();
+    file.read(reinterpret_cast<char *>(&now), sizeof(now));
     double sec = (double)clock() / CLOCKS_PER_SEC;
     wt_time += sec - fir;
     return;
@@ -557,7 +554,7 @@ void UnrolledLinkedList::erase(const std::string key, DataType data) {
 } // namespace bookstore
 
 int main(int argc, char *argv[]) {
-    if (argc == 2 && !strcmp(argv[1], "--storage-type=ram"))
+    if (argc >= 2 && !strcmp(argv[1], "--storage-type=ram"))
         cur = RAMStorage;
     else
         cur = ROMStorage;
