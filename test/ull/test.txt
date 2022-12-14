@@ -1,0 +1,1001 @@
+1000
+find 838 
+delete 11 432
+find 534 
+insert 749 157
+find 923 
+find 64 
+find 438 
+delete 468 781
+delete 678 871
+insert 296 118
+insert 914 582
+find 917 
+delete 868 617
+find 245 
+insert 556 424
+insert 833 13
+delete 180 943
+find 969 
+delete 790 586
+delete 404 124
+delete 791 99
+find 277 
+insert 885 110
+delete 165 223
+find 88 
+delete 150 810
+insert 316 898
+delete 144 178
+find 55 
+delete 1 24
+delete 476 568
+insert 699 929
+find 674 
+delete 263 609
+find 440 
+insert 536 35
+find 2 
+delete 269 425
+insert 473 435
+delete 49 294
+delete 653 982
+delete 302 145
+insert 947 518
+insert 784 651
+delete 487 912
+insert 24 82
+find 609 
+insert 730 787
+insert 680 803
+delete 380 313
+insert 870 243
+insert 11 718
+find 769 
+delete 619 867
+find 136 
+insert 235 899
+find 488 
+insert 790 244
+delete 806 938
+find 563 
+delete 626 448
+insert 802 360
+insert 669 65
+insert 114 981
+insert 572 806
+find 629 
+delete 434 753
+find 712 
+insert 223 403
+find 46 
+insert 524 429
+find 131 
+find 986 
+find 29 
+insert 915 27
+find 258 
+insert 868 304
+find 1000 
+delete 905 534
+insert 937 192
+delete 535 634
+insert 99 258
+find 178 
+insert 360 929
+delete 936 804
+find 54 
+insert 10 123
+find 699 
+delete 989 428
+insert 316 294
+insert 652 42
+insert 509 428
+insert 999 758
+find 72 
+find 556 
+find 669 
+insert 134 270
+find 620 
+find 375 
+find 616 
+insert 769 888
+delete 878 257
+insert 713 754
+delete 278 726
+insert 227 926
+insert 176 422
+delete 739 682
+insert 9 830
+find 79 
+delete 320 405
+insert 908 882
+delete 170 304
+insert 107 912
+delete 22 93
+find 892 
+find 89 
+insert 525 614
+find 558 
+insert 85 663
+insert 293 847
+delete 966 907
+insert 596 368
+find 153 
+insert 848 68
+find 550 
+insert 522 364
+insert 242 406
+insert 398 473
+insert 915 9
+insert 429 126
+insert 336 391
+insert 323 587
+find 682 
+insert 804 880
+insert 310 259
+delete 162 586
+delete 770 846
+find 201 
+delete 638 560
+delete 328 883
+insert 80 988
+find 235 
+delete 671 84
+insert 741 903
+insert 146 477
+find 911 
+find 274 
+insert 989 503
+insert 931 447
+delete 315 442
+insert 243 594
+insert 631 842
+find 910 
+delete 238 505
+find 486 
+find 473 
+insert 254 986
+find 73 
+insert 167 811
+insert 980 9
+insert 869 127
+find 734 
+insert 356 473
+find 987 
+insert 164 485
+find 890 
+delete 912 334
+delete 903 927
+insert 356 468
+find 86 
+insert 877 622
+find 822 
+insert 649 726
+delete 231 606
+delete 555 90
+find 55 
+insert 29 584
+insert 482 972
+delete 225 737
+insert 772 350
+find 809 
+delete 253 501
+find 118 
+find 574 
+insert 437 990
+find 336 
+insert 730 304
+delete 457 709
+find 740 
+find 321 
+find 602 
+insert 552 672
+find 261 
+delete 921 424
+delete 498 575
+delete 487 832
+delete 485 891
+find 88 
+delete 874 555
+insert 943 587
+insert 394 490
+insert 678 612
+delete 830 876
+find 234 
+delete 589 817
+delete 720 719
+find 352 
+insert 381 382
+delete 250 139
+delete 473 604
+insert 782 369
+find 716 
+find 622 
+delete 390 449
+delete 298 260
+insert 185 828
+find 858 
+find 546 
+insert 917 30
+find 319 
+insert 394 108
+insert 97 353
+find 833 
+delete 129 540
+delete 929 281
+delete 707 243
+delete 95 631
+insert 735 215
+insert 266 947
+delete 712 894
+delete 408 750
+find 241 
+find 699 
+insert 497 752
+insert 711 543
+delete 158 220
+find 166 
+delete 661 186
+find 998 
+delete 841 394
+delete 36 177
+delete 226 281
+insert 274 26
+insert 182 476
+find 937 
+delete 317 341
+find 844 
+insert 278 153
+find 748 
+find 959 
+delete 875 451
+find 918 
+delete 664 893
+find 418 
+insert 766 647
+delete 47 853
+find 807 
+insert 801 307
+find 438 
+find 319 
+find 295 
+insert 894 976
+delete 65 654
+delete 236 557
+delete 513 139
+find 884 
+insert 603 451
+insert 828 670
+delete 736 713
+insert 283 629
+find 835 
+find 889 
+find 736 
+delete 305 689
+find 131 
+insert 799 275
+insert 774 436
+delete 302 670
+find 669 
+delete 983 938
+insert 511 439
+delete 863 494
+insert 255 22
+delete 358 873
+insert 483 397
+delete 260 211
+find 390 
+delete 446 751
+delete 524 735
+find 374 
+insert 72 687
+find 87 
+find 543 
+insert 133 726
+insert 276 378
+insert 288 959
+delete 797 861
+delete 148 85
+delete 293 674
+insert 711 232
+delete 274 239
+find 900 
+delete 595 964
+insert 705 379
+find 359 
+find 63 
+find 123 
+find 213 
+find 571 
+find 316 
+delete 512 628
+insert 78 885
+delete 446 959
+insert 678 332
+insert 443 533
+delete 456 354
+find 972 
+delete 741 876
+delete 639 441
+find 911 
+delete 896 413
+insert 570 708
+insert 82 124
+delete 275 130
+find 309 
+insert 851 550
+delete 392 664
+find 151 
+insert 945 721
+find 288 
+find 829 
+delete 983 950
+find 4 
+delete 177 441
+insert 287 329
+insert 325 625
+find 916 
+delete 597 11
+insert 512 888
+insert 107 912
+delete 198 45
+find 476 
+delete 310 128
+delete 794 166
+find 665 
+find 867 
+insert 746 632
+find 696 
+delete 423 510
+insert 417 65
+delete 286 795
+delete 748 428
+insert 658 795
+insert 184 817
+insert 387 273
+delete 1000 947
+insert 365 153
+find 6 
+delete 283 88
+insert 826 738
+insert 85 629
+insert 27 824
+insert 731 651
+delete 455 743
+find 607 
+insert 162 851
+insert 126 290
+find 16 
+find 309 
+insert 239 979
+find 52 
+find 909 
+delete 754 259
+find 323 
+insert 527 981
+delete 246 968
+insert 219 291
+find 846 
+delete 567 546
+insert 543 963
+find 519 
+insert 222 804
+find 725 
+delete 408 606
+find 868 
+delete 88 121
+find 227 
+delete 368 53
+delete 586 161
+insert 981 403
+insert 930 666
+find 303 
+delete 237 163
+delete 908 158
+insert 950 183
+delete 783 673
+find 333 
+insert 19 593
+insert 357 4
+find 748 
+insert 123 336
+delete 268 786
+insert 881 469
+delete 114 661
+delete 101 295
+find 367 
+delete 406 247
+find 278 
+insert 668 247
+find 674 
+find 284 
+insert 754 23
+insert 189 598
+insert 177 501
+find 132 
+find 8 
+find 79 
+insert 585 90
+find 825 
+insert 684 194
+find 566 
+insert 323 949
+insert 856 861
+delete 359 154
+insert 496 764
+insert 417 375
+insert 704 62
+delete 570 911
+find 484 
+delete 790 583
+find 706 
+delete 217 528
+find 889 
+insert 710 418
+find 482 
+find 908 
+find 431 
+find 101 
+insert 730 413
+find 598 
+insert 823 411
+delete 21 911
+find 283 
+delete 219 439
+find 821 
+insert 399 978
+delete 726 476
+find 144 
+find 516 
+insert 285 561
+delete 987 635
+delete 744 128
+insert 777 962
+find 87 
+delete 612 963
+insert 962 754
+insert 431 240
+find 463 
+insert 586 329
+insert 819 745
+find 996 
+insert 596 232
+insert 391 822
+insert 150 450
+find 419 
+insert 268 310
+insert 110 730
+delete 380 653
+find 363 
+insert 41 185
+delete 3 427
+delete 762 282
+delete 593 899
+delete 747 368
+find 424 
+find 20 
+insert 266 586
+find 26 
+delete 69 513
+insert 538 116
+delete 356 463
+insert 99 427
+delete 878 710
+find 475 
+delete 704 555
+delete 512 871
+delete 862 562
+delete 525 201
+find 778 
+find 212 
+find 253 
+delete 442 105
+delete 152 108
+find 29 
+insert 970 178
+delete 200 382
+find 632 
+find 531 
+find 320 
+insert 727 253
+delete 550 586
+find 950 
+find 845 
+find 513 
+insert 773 968
+insert 164 992
+insert 894 669
+delete 523 99
+delete 581 975
+find 443 
+find 449 
+find 872 
+insert 757 578
+insert 68 114
+insert 765 830
+delete 961 322
+find 183 
+delete 685 532
+insert 364 111
+find 107 
+insert 148 403
+find 277 
+insert 782 285
+find 604 
+insert 448 510
+insert 375 558
+find 706 
+delete 206 616
+find 693 
+insert 449 179
+delete 105 659
+find 468 
+delete 57 116
+insert 532 972
+find 448 
+insert 789 744
+insert 191 76
+insert 11 38
+delete 352 568
+find 199 
+insert 54 751
+insert 799 478
+find 740 
+find 621 
+delete 732 458
+find 332 
+delete 744 52
+insert 191 555
+delete 780 808
+find 561 
+delete 940 720
+delete 676 343
+delete 520 686
+insert 686 333
+insert 389 352
+insert 147 583
+insert 320 6
+delete 17 171
+insert 308 524
+find 199 
+insert 539 230
+insert 220 997
+delete 382 345
+delete 311 146
+find 693 
+delete 173 948
+find 162 
+find 180 
+find 369 
+delete 96 364
+insert 898 124
+find 617 
+insert 49 637
+delete 834 878
+delete 548 90
+insert 297 651
+find 274 
+find 732 
+delete 671 879
+delete 61 967
+delete 181 831
+insert 757 135
+delete 834 763
+find 323 
+insert 923 652
+find 698 
+insert 730 286
+find 555 
+delete 77 519
+find 97 
+insert 69 33
+delete 214 52
+find 749 
+find 435 
+find 264 
+delete 1 34
+delete 607 853
+find 704 
+delete 736 98
+find 83 
+delete 191 279
+find 920 
+delete 478 630
+insert 827 6
+delete 476 151
+insert 987 401
+delete 851 60
+insert 262 230
+delete 115 57
+delete 371 691
+delete 779 247
+insert 921 24
+find 164 
+insert 220 470
+insert 760 162
+delete 353 721
+delete 957 439
+delete 495 216
+insert 8 887
+insert 495 327
+insert 393 515
+find 803 
+find 87 
+insert 885 844
+find 425 
+delete 351 666
+find 210 
+find 524 
+delete 264 750
+delete 374 343
+delete 716 256
+insert 495 859
+delete 295 974
+find 510 
+find 213 
+delete 701 680
+insert 201 503
+insert 309 643
+insert 582 845
+insert 993 401
+insert 174 405
+delete 455 706
+delete 345 224
+find 419 
+find 653 
+insert 276 844
+insert 280 47
+insert 699 562
+delete 982 532
+insert 390 503
+find 996 
+insert 422 427
+find 895 
+find 851 
+insert 39 568
+delete 665 736
+insert 756 181
+insert 897 11
+find 947 
+insert 349 768
+delete 29 423
+insert 249 691
+delete 451 774
+insert 237 682
+delete 218 676
+insert 703 826
+find 997 
+delete 485 433
+delete 291 694
+find 586 
+insert 18 95
+find 559 
+find 828 
+find 408 
+find 925 
+delete 906 26
+delete 936 927
+delete 365 555
+insert 880 237
+insert 538 736
+find 651 
+insert 453 44
+find 309 
+delete 890 929
+insert 170 147
+insert 159 805
+insert 751 651
+find 684 
+find 152 
+insert 998 718
+insert 569 928
+insert 566 268
+find 387 
+insert 241 93
+delete 213 517
+insert 582 507
+insert 577 446
+insert 748 728
+find 624 
+delete 886 637
+insert 8 242
+delete 131 704
+delete 172 628
+find 300 
+find 171 
+find 937 
+find 532 
+delete 628 55
+delete 65 885
+delete 358 875
+find 196 
+find 513 
+insert 852 803
+insert 544 780
+insert 969 184
+delete 759 687
+insert 902 124
+delete 888 448
+find 117 
+find 70 
+delete 111 259
+find 511 
+find 98 
+insert 690 410
+insert 667 397
+delete 287 359
+delete 830 292
+find 587 
+insert 122 130
+find 855 
+insert 449 736
+find 413 
+find 840 
+delete 964 369
+insert 529 567
+find 500 
+find 312 
+find 256 
+insert 21 455
+find 289 
+insert 498 673
+find 101 
+find 760 
+insert 174 483
+insert 319 145
+delete 339 491
+insert 916 408
+find 32 
+find 108 
+find 244 
+insert 252 671
+delete 145 490
+find 60 
+delete 665 621
+insert 109 418
+insert 249 52
+delete 126 428
+insert 524 671
+delete 344 606
+insert 519 180
+delete 932 670
+insert 353 483
+insert 7 331
+find 969 
+find 341 
+find 163 
+delete 961 115
+insert 436 389
+delete 408 276
+find 658 
+delete 522 783
+find 506 
+find 363 
+find 292 
+find 31 
+delete 161 403
+insert 475 623
+delete 304 461
+find 823 
+find 922 
+delete 707 402
+find 772 
+delete 452 323
+delete 557 960
+find 979 
+find 336 
+delete 800 221
+insert 923 436
+insert 600 941
+find 304 
+insert 211 945
+insert 103 169
+insert 270 649
+delete 694 470
+find 963 
+find 37 
+insert 35 970
+delete 53 941
+delete 652 510
+insert 432 385
+delete 721 163
+insert 403 211
+find 196 
+delete 394 10
+delete 369 494
+delete 272 229
+find 804 
+find 283 
+delete 105 625
+insert 386 370
+delete 296 368
+delete 868 375
+find 275 
+insert 196 948
+delete 379 605
+delete 597 185
+delete 836 107
+insert 88 127
+find 903 
+insert 454 420
+delete 839 537
+insert 232 40
+insert 944 92
+find 163 
+delete 725 122
+find 924 
+find 610 
+insert 813 826
+find 139 
+delete 505 510
+delete 59 810
+find 5 
+find 811 
+find 500 
+insert 905 224
+find 842 
+find 247 
+insert 639 234
+insert 466 297
+insert 89 700
+delete 137 3
+find 325 
+insert 684 729
+insert 601 609
+find 120 
+delete 926 957
+delete 603 542
+find 38 
+find 132 
+insert 38 417
+delete 606 822
+delete 707 697
+delete 642 505
+insert 699 593
+insert 254 445
+insert 338 334
+find 469 
+delete 127 362
+insert 483 2
+delete 380 260
+insert 915 897
+insert 423 452
+delete 405 265
+delete 758 182
+delete 104 283
+delete 971 270
+insert 209 477
+insert 975 524
+insert 51 8
+find 459 
+find 159 
+insert 621 485
+find 288 
+insert 953 853
+delete 417 902
+find 393 
+find 169 
+insert 72 775
+find 357 
+find 803 
+delete 543 853
+find 517 
+delete 759 540
+find 728 
+find 702 
+insert 631 493
+find 316 
+delete 143 120
+insert 685 694
+insert 299 40
+delete 155 767
+insert 935 912
+insert 120 297
+insert 274 464
+insert 791 700
+find 357 
+delete 559 727
+find 301 
+delete 574 393
+delete 51 254
+delete 168 650
+delete 593 368
+insert 546 11
+find 666 
+delete 357 335
+find 943 
+delete 62 155
+delete 605 616
+find 373 
+find 715 
+delete 653 914
+delete 87 943
+find 405 
+delete 209 839
+insert 916 643
+delete 369 34
+find 982 
+insert 420 30
+insert 782 717
+delete 438 986
+find 27 
+find 509 
+insert 371 583
+delete 22 655
+find 116 
+delete 956 112
+insert 186 129
+insert 167 377
+find 13 
+delete 357 563
+insert 417 170
+delete 731 240
+find 324 
+find 841 
+delete 945 183
+find 957 
+delete 403 33
+insert 542 168
+insert 134 411
+insert 265 729
+delete 81 969
+find 922 
+insert 695 638
+delete 191 267
+insert 511 815
+find 503 
+find 10 
+find 405 
+find 542 
+find 883 
+delete 881 548
+find 185 
+insert 810 450
+delete 619 530
+delete 729 67
+delete 337 270
+find 516 
+delete 940 614
+insert 972 505
+delete 125 224
+insert 639 12
+delete 481 903
+find 584 
+insert 881 769
+find 804 
+delete 219 308
+find 775 
+delete 300 241
+find 609 
+delete 583 585
+delete 385 451
+insert 671 522
+insert 593 366
+delete 588 900
+insert 605 836
+insert 830 697
+insert 500 608
+delete 760 62
+find 101 
+delete 793 517
+delete 152 523
+insert 107 618
+delete 86 782
+find 750 
+insert 979 961
+delete 153 125
+insert 639 942
+delete 88 362
+find 165 
+delete 194 101
+insert 57 934
+delete 201 284
+insert 508 36
+find 404 
+insert 210 15
+delete 652 41
+delete 857 270
+find 200 
+find 453 
+insert 291 541
