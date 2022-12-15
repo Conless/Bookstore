@@ -18,6 +18,7 @@
 #include <string>
 #include <fstream>
 #include <vector>
+#include <set>
 
 namespace bookstore {
 
@@ -50,8 +51,10 @@ class UnrolledLinkedList {
 
     // The type of block
     static const size_t kMinBlockSize = 128;
-    static const size_t kMaxBlockSize = 5000;
+    static const size_t kMaxBlockSize = 512;
     class ListBlock;
+
+    static const size_t kMaxBlockCnt = 1000;
 
   public:
     void allocate(ListBlock &cur);
@@ -59,11 +62,12 @@ class UnrolledLinkedList {
     void insert(ListBlock &cur, const DataType &tmp);
     void erase(ListBlock &cur, const DataType &tmp);
     std::vector<int> find(ListBlock &cur, const char *key);
+    ListBlock split(ListBlock &cur); 
     void output(ListBlock &cur);
 
+    std::set<int> free_blocks;
     std::vector<ListBlock> blocks;
 
-    static ListBlock buffer;
     std::fstream file;
     std::string file_name;
 };

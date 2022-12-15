@@ -47,6 +47,7 @@ class UnrolledLinkedList::KeyType {
  */
 class UnrolledLinkedList::DataType {
     friend class ListBlock;
+
   public:
     KeyType key;
     int value;
@@ -83,12 +84,12 @@ class UnrolledLinkedList::ListBlock {
 
 void UnrolledLinkedList::allocate(ListBlock &cur) {
     cur.data = new DataType[kMaxBlockSize];
-    file.seekg(0);
+    file.seekg(sizeof(DataType) * kMaxBlockSize * (cur.pos - 1));
     file.read(reinterpret_cast<char *>(cur.data), sizeof(DataType) * cur.len);
 }
 void UnrolledLinkedList::deallocate(ListBlock &cur) {
     // DataType *a = new DataType;
-    file.seekp(0);
+    file.seekp(sizeof(DataType) * kMaxBlockSize * (cur.pos - 1));
     file.write(reinterpret_cast<char *>(cur.data), sizeof(DataType) * cur.len);
     delete[] cur.data;
 }
@@ -126,8 +127,26 @@ void UnrolledLinkedList::erase(ListBlock &cur, const DataType &tmp) {
 void UnrolledLinkedList::output(ListBlock &cur) {
     allocate(cur);
     for (int i = 0; i < cur.len; i++)
-        std::cout << cur.data[i].value << " " << cur.data[i].key.str << '\n';
+        std::cout << cur.data[i].key.str << " " << cur.data[i].value << '\n';
     deallocate(cur);
+}
+UnrolledLinkedList::ListBlock UnrolledLinkedList::split(ListBlock &cur) {
+    ListBlock nex(cur.len, cur.pos);
+    allocate(cur);
+    allocate(nex);
+    nex.len >>= 1;
+    cur.len -= nex.len;
+    for (int i = 0; i < nex.len; i++)
+        nex.data[i] = cur.data[i + cur.len];
+    cur.tail = cur.data[cur.len - 1];
+    nex.head = nex.data[0];
+    nex.tail = nex.data[nex.len - 1];
+    deallocate(cur);
+    int nex_pos = *(free_blocks.begin());
+    free_blocks.erase(nex_pos);
+    nex.pos = nex_pos;
+    deallocate(nex);
+    return nex;
 }
 std::vector<int> UnrolledLinkedList::find(ListBlock &cur, const char *key) {
     allocate(cur);
@@ -151,28 +170,36 @@ std::vector<int> UnrolledLinkedList::find(ListBlock &cur, const char *key) {
  */
 UnrolledLinkedList::UnrolledLinkedList(const std::string &_file_name) : file_name(_file_name) {
     std::filesystem::create_directory("data");
-    std::string log_file = "data/" + std::string(file_name) + ".log";
-    std::string dat_file = "data/" + std::string(file_name) + ".dat";
+    std::string log_file = "data/" + file_name + ".log";
+    std::string dat_file = "data/" + file_name + ".dat";
     std::ifstream InputLog(log_file);
+    blocks.clear();
     blocks.push_back(ListBlock());
+    for (int i = 1; i <= kMaxBlockCnt; i++)
+        free_blocks.insert(i);
     if (InputLog.good()) {
+        file.open(dat_file);
         int T;
         InputLog >> T;
-        blocks.clear();
         for (int i = 1; i <= T; i++) {
             size_t _len;
             int _pos;
             InputLog >> _len >> _pos;
             blocks.push_back(ListBlock(_len, _pos));
+            allocate(blocks[i]);
+            blocks[i].head = blocks[i].data[0];
+            blocks[i].tail = blocks[i].data[blocks[i].len - 1];
+            deallocate(blocks[i]);
+            free_blocks.erase(_pos);
         }
     } else {
         std::ofstream tmp(dat_file, std::ios::out | std::ios::trunc);
         tmp.close();
+        file.open(dat_file);
     }
-    file.open(dat_file);
 }
 UnrolledLinkedList::~UnrolledLinkedList() {
-    std::string log_file = "data/" + std::string(file_name) + ".log";
+    std::string log_file = "data/" + file_name + ".log";
     std::ofstream OutputLog(log_file, std::ios::out | std::ios::trunc);
     int len = blocks.size() - 1;
     OutputLog << len << '\n';
@@ -186,11 +213,22 @@ void UnrolledLinkedList::insert(const char *key, const int value) {
     int len = blocks.size() - 1;
     if (!len) {
         blocks.push_back(ListBlock(0, 1));
+        free_blocks.erase(1);
         insert(blocks[1], tmp);
     } else {
-        insert(blocks[1], tmp);
         int len = blocks.size() - 1;
-        // for (int i = 1; i <= len; i++)
+        int pos = 0;
+        for (int i = 1; i <= len; i++) {
+            if (tmp <= blocks[i].tail) {
+                insert(blocks[i], tmp);
+                pos = i;
+                break;
+            }
+        }
+        if (!pos)
+            insert(blocks[pos = len], tmp);
+        if (blocks[pos].len >= kMaxBlockSize)
+            blocks.insert(blocks.begin() + pos + 1, split(blocks[pos]));
     }
 }
 
@@ -199,14 +237,37 @@ void UnrolledLinkedList::erase(const char *key, const int value) {
     int len = blocks.size() - 1;
     if (!len)
         throw Exception(UNKNOWN, "Given data was not found");
-    erase(blocks[1], tmp);
+    int pos = 0;
+    for (int i = 1; i <= len; i++) {
+        if (tmp <= blocks[i].tail) {
+            erase(blocks[i], tmp);
+            pos = i;
+            break;
+        }
+    }
+    if (pos) {
+        if (!blocks[pos].len) {
+            blocks.erase(blocks.begin() + pos);
+            free_blocks.insert(blocks[pos].pos);
+        }
+    }
 }
 
 std::vector<int> UnrolledLinkedList::find(const char *key) {
     int len = blocks.size() - 1;
     if (!len)
         return std::vector<int>();
-    return find(blocks[1], key);
+    std::vector<int> ret;
+    ret.clear();
+    for (int i = 1; i <= len; i++) {
+        if (blocks[i].head.key > key)
+            break;
+        else if (blocks[i].tail.key >= key) {
+            std::vector<int> ret_tmp = find(blocks[i], key);
+            ret.insert(ret.end(), ret_tmp.begin(), ret_tmp.end());
+        }
+    }
+    return ret;
 }
 
 } // namespace list

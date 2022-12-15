@@ -73,7 +73,11 @@ class ULLTst : public UnrolledLinkedList {
                         std::cout << '\n';
                     }
                 }
-                // output(blocks[1]);
+                // std::cout << "Status:\n";
+                // for (int i = 1; i <= blocks.size() - 1; i++) {
+                //     std::cout << "Block " << i << ":\n";
+                //     output(blocks[i]);
+                // }
                 // std::cout << '\n';
             } catch (const Exception &x) {
             }
