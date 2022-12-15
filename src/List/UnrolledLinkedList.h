@@ -27,7 +27,7 @@ class UnrolledLinkedList;
 
 class UnrolledLinkedList {
   public:
-    UnrolledLinkedList(const char *file_name);
+    UnrolledLinkedList(const std::string &file_name);
     ~UnrolledLinkedList();
 
   public:
@@ -38,20 +38,12 @@ class UnrolledLinkedList {
   public:
     void insert(const char *key, const int value);
     std::vector<int> find(const char *key);
-    void erase(const char *key, const int data);
-
-    void haha();
+    void erase(const char *key, const int value);
 
   protected:
-    
-
-  private:
     // The type of key, of a maximum string len of 64.
-    static const size_t kMaxKeyLen = 64 + 1;
+    static const size_t kMaxKeyLen = 64 + 5;
     class KeyType;
-
-    // The type of value
-    typedef int ValueType;
 
     // The type of data
     class DataType;
@@ -61,11 +53,20 @@ class UnrolledLinkedList {
     static const size_t kMaxBlockSize = 512;
     class ListBlock;
 
+  public:
+    void allocate(ListBlock &cur, int write_pos = 0);
+    void deallocate(ListBlock &cur);
+    void insert(ListBlock &cur, const DataType &tmp);
+    void erase(ListBlock &cur, const DataType &tmp);
+    std::vector<int> find(ListBlock &cur, const char *key);
+    void output(ListBlock &cur);
+
+    std::vector<ListBlock> blocks;
+
     static ListBlock buffer;
     std::fstream file;
+    std::string file_name;
 };
-
-
 
 } // namespace list
 
