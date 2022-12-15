@@ -50,11 +50,11 @@ class UnrolledLinkedList {
 
     // The type of block
     static const size_t kMinBlockSize = 128;
-    static const size_t kMaxBlockSize = 512;
+    static const size_t kMaxBlockSize = 5000;
     class ListBlock;
 
   public:
-    void allocate(ListBlock &cur, int write_pos = 0);
+    void allocate(ListBlock &cur);
     void deallocate(ListBlock &cur);
     void insert(ListBlock &cur, const DataType &tmp);
     void erase(ListBlock &cur, const DataType &tmp);
