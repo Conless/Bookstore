@@ -133,6 +133,8 @@ std::vector<int> UnrolledLinkedList::find(ListBlock &cur, const char *key) {
     allocate(cur);
     std::vector<int> ret;
     ret.clear();
+    if (!cur.len)
+        return ret;
     int pos = std::lower_bound(cur.data, cur.data + cur.len, DataType(key, 0)) - cur.data;
     for (; pos < cur.len; pos++) {
         if (cur.data[pos].key > key)
@@ -186,6 +188,7 @@ void UnrolledLinkedList::insert(const char *key, const int value) {
         blocks.push_back(ListBlock(0, 1));
         insert(blocks[1], tmp);
     } else {
+        insert(blocks[1], tmp);
         int len = blocks.size() - 1;
         // for (int i = 1; i <= len; i++)
     }
