@@ -13,7 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 
 # Test
 add_subdirectory(test)
-add_subdirectory(depends/googletest)
+# add_subdirectory(depends/googletest)
 
 # set(CMAKE_CXX_FLAGS "-Ofast")
 
