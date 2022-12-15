@@ -15,7 +15,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 # add_subdirectory(test)
 # add_subdirectory(depends/googletest)
 
-set(CMAKE_CXX_FLAGS "-Ofast")
+set(CMAKE_CXX_FLAGS "-Ofast -std=c++17")
 
 # include_directories(${PROJECT_SOURCE_DIR}/src)
 add_executable(code ${PROJECT_SOURCE_DIR}/test/ull/test1.cc)
