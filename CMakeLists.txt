@@ -8,7 +8,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Main sources
-include_directories(${PROJECT_SOURCE_DIR}/src)
+# include_directories(${PROJECT_SOURCE_DIR}/src)
 # add_subdirectory(src)
 
 # Test
@@ -18,4 +18,4 @@ add_subdirectory(test)
 # set(CMAKE_CXX_FLAGS "-Ofast")
 
 # include_directories(${PROJECT_SOURCE_DIR}/src)
-# add_executable(code ${PROJECT_SOURCE_DIR}/test/ull/test1.cc)
+add_executable(code ${PROJECT_SOURCE_DIR}/test/ull/test1.cc)
