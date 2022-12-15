@@ -70,14 +70,14 @@ class UnrolledLinkedList::ListBlock {
 
   public:
     ListBlock() : data(), len(0), pre(0), nex(0) {}
-    ListBlock(size_t _len, IndexType _now, IndexType _pre, IndexType _nex) : len(_len), now(_now), pre(_pre), nex(_nex) {}
+    ListBlock(size_t _len, int _now, int _pre, int _nex) : len(_len), now(_now), pre(_pre), nex(_nex) {}
     ~ListBlock() {}
 
   public:
     DataType *data;
     DataType head, tail;
     size_t len;
-    IndexType now, pre, nex;
+    int now, pre, nex;
 };
 
 void UnrolledLinkedList::allocate(ListBlock &cur, int write_pos) {
@@ -97,7 +97,8 @@ void UnrolledLinkedList::insert(ListBlock &cur, const DataType &tmp) {
     int pos = std::lower_bound(cur.data, cur.data + cur.len, tmp) - cur.data;
     if (cur.data[pos] == tmp)
         throw Exception(UNKNOWN, "Given data has already been inserted.");
-    std::copy(cur.data + pos, cur.data + cur.len, cur.data + pos + 1);
+    for (int i = cur.len; i >= pos + 1; i--)
+        cur.data[i] = cur.data[i - 1];
     cur.len++;
     cur.data[pos] = tmp;
     deallocate(cur);
@@ -148,7 +149,7 @@ UnrolledLinkedList::UnrolledLinkedList(const std::string &_file_name) : file_nam
         blocks.clear();
         for (int i = 1; i <= T; i++) {
             size_t _len;
-            IndexType _pre, _nex;
+            int _pre, _nex;
             InputLog >> _len >> _pre >> _nex;
             blocks.push_back(ListBlock(_len, i, _pre, _nex));
         }
@@ -166,6 +167,7 @@ UnrolledLinkedList::~UnrolledLinkedList() {
     for (int i = 1; i <= len; i++)
         OutputLog << blocks[i].len << ' ' << blocks[i].now << ' ' << blocks[i].pre << ' ' << blocks[i].nex << '\n';
     OutputLog.close();
+    exit(0);
 }
 
 void UnrolledLinkedList::insert(const char *key, const int value) {

@@ -12,16 +12,16 @@
 #ifndef BOOKSTORE_LIST_ULL_H
 #define BOOKSTORE_LIST_ULL_H
 
-#include "File/FileSystem.h"
+// #include "File/FileSystem.h"
 
 #include <cstring>
+#include <string>
+#include <fstream>
 #include <vector>
 
 namespace bookstore {
 
 namespace list {
-
-typedef unsigned int IndexType;
 
 class UnrolledLinkedList;
 

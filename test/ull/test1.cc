@@ -55,25 +55,28 @@ class ULLTst : public UnrolledLinkedList {
         while (T--) {
             string opt;
             std::cin >> opt;
-            if (opt == "insert") {
-                std::cin >> str >> data;
-                insert(str, data);
-            } else if (opt == "erase") {
-                std::cin >> str >> data;
-                erase(str, data);
-            } else if (opt == "find") {
-                std::cin >> str;
-                std::vector<int> ret = find(str);
-                if (!ret.size())
-                    std::cout << "null\n";
-                else {
-                    for (const auto &num : ret)
-                        std::cout << num << ' ';
-                    std::cout << '\n';
+            try {
+                if (opt == "insert") {
+                    std::cin >> str >> data;
+                    insert(str, data);
+                } else if (opt == "delete") {
+                    std::cin >> str >> data;
+                    erase(str, data);
+                } else if (opt == "find") {
+                    std::cin >> str;
+                    std::vector<int> ret = find(str);
+                    if (!ret.size())
+                        std::cout << "null\n";
+                    else {
+                        for (const auto &num : ret)
+                            std::cout << num << ' ';
+                        std::cout << '\n';
+                    }
                 }
+                // output(blocks[1]);
+                // std::cout << '\n';
+            } catch (const Exception &x) {
             }
-            // output(blocks[1]);
-            // std::cout << '\n';
         }
     }
 };
