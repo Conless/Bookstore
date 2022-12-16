@@ -2,7 +2,8 @@ include(CTest)
 set(TST_PROJECT_NAME ${CMAKE_PROJECT_NAME}_tst)
 
 # include_directories(${PROJECT_SOURCE_DIR}/depends/libull/include)
- 
+
+set(CMAKE_CXX_FLAGS "-g -std=c++17")
 add_executable(${TST_PROJECT_NAME}_1 ull/test1.cc)
 # add_test(${TST_PROJECT_NAME}_2 ull/test2.cc ${PROJECT_SOURCE_DIR}/src/List/UnrolledLinkedList.cc)
 

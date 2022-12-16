@@ -2,6 +2,7 @@
 #include "List/UnrolledLinkedList.h"
 
 #include <bits/stdc++.h>
+#include <memory>
 
 using namespace std;
 
@@ -13,14 +14,18 @@ class ULLTst : public UnrolledLinkedList {
   public:
     ULLTst(const char *file_name) : UnrolledLinkedList(file_name) {}
     void test1() {
-        ListBlock a, b;
-        file.seekp(0);
-        a.data = new DataType[1];
-        strcpy(a.data[0].key.str, "a");
-        puts(a.data[0].key.str);
-        deallocate(a);
-        allocate(b);
-        puts(b.data[0].key.str);
+        // ListBlock a(1, 1), b(1, 2);
+        // a.data = new DataType[1];
+        // strcpy(a.data[0].key.str, "a");
+        // deallocate(a);
+        // b.data = new DataType[1];
+        // b.len = 1;
+        // strcpy(b.data[0].key.str, "b");
+        // deallocate(b);
+        // merge(a, b);
+        // allocate(a);
+        // puts(a.data[0].key.str);
+        // output(a);
     }
 
     void test2() {

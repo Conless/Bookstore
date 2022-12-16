@@ -10,8 +10,8 @@ cause a mess of the source version, you are NOT allowed to:
  * @file UnrolledLinkedList.h
  * @author Conless Pan (conlesspan@outlook.com)
  * @brief
- * @version 0.1
- * @date 2022-12-09
+ * @version 0.2
+ * @date 2022-12-14
  *
  * @copyright Copyright (c) 2022
  *
@@ -20,514 +20,584 @@ cause a mess of the source version, you are NOT allowed to:
 #ifndef BOOKSTORE_LIST_ULL_H
 #define BOOKSTORE_LIST_ULL_H
 
-#include <fstream>
 #include <string>
+#include <fstream>
 #include <vector>
+#include <set>
 
 namespace bookstore {
 
 namespace list {
 
 /**
- * @brief Class UnrolledLinkedList
- * @details The main type of file storage system
+ * @brief class UnrolledLinkedList
+ * @details The main part of the data structure, with the operations below supported
+    - Insert, delete, find a data in O(sqrt(n))
+    - Running with ram space O(sqrt(n)) and file space O(n)
  */
 class UnrolledLinkedList {
-  private:
-    // The type of key
-    typedef char KeyType[72];
-
-    // The type of data
-    typedef int DataType;
-
-    // The type of index
-    typedef unsigned int IndexType;
-
-    // The size of those types
-    const size_t kSizeofKey = sizeof(KeyType);
-    const size_t kSizeofData = sizeof(DataType);
-    const size_t kSizeofIndex = sizeof(IndexType);
-    const size_t kSizeofNode = kSizeofKey + kSizeofData + kSizeofIndex * 2;
-
-  private:
-    /**
-     * @brief Structure type Node
-     * @details Used to record all the data in a node of ull. Similar to struct node in traditional linkedlist.
-     */
-    struct Node {
-        // The key of this node
-        std::string key;
-        // The pos of this node, i.e. the place it is located on in file_name.bin
-        IndexType pos;
-        // The data of this node
-        DataType data;
-        // The next "pointer" of this node, i.e. the pos of its next node.
-        IndexType next;
-
-        // Constructor of Node
-        Node() = default;
-        // Initializer of Node
-        Node(std::string key, IndexType pos, DataType data, IndexType next = 0) // Initializer for Node
-            : key(key), pos(pos), data(data), next(next) {}
-    };
-
-  private:
-    // The maximum size of a single list
-    const DataType max_block_size;
-
-    // The head, tail "pointer" of each block
-    std::vector<IndexType> head, tail;
-
-    // The size of each block
-    std::vector<IndexType> siz;
-
-    // The file name
-    std::string file_name;
-
-    // The total number of data, not included the deleted ones
-    DataType cnt;
-
-    // The file I/O variable
-    std::fstream file;
-
   public:
-    // Constructor of ull
-    UnrolledLinkedList(const std::string file_path, const bool inherit_tag = false, const IndexType block_size = 1000);
+    // The constructor of ull
+    UnrolledLinkedList(const std::string &file_name);
 
-    // Destructor of ull
+    // The destructor of ull
     ~UnrolledLinkedList();
 
-  private:
-    // Read a node in file_name.bin
-    Node ReadNode(IndexType pos);
-
-    // Write or rewrite a node in file_name.bin
-    void WriteNode(IndexType pos, Node now);
-
-    // Insert a node in the selected block
-    IndexType InsertData(IndexType pos, const std::string key, IndexType num, DataType data);
-
-    // Simplify the ull
-    void Simplify();
-
-    // Output the current data of ull
-    void Output();
-
   public:
-    // Insert a pair of key and data
-    void insert(const std::string key, DataType data);
+    // Judge whether the ull is empty
+    bool empty() const;
 
-    // Find a vector of data by the given key
-    std::vector<DataType> find(const std::string key);
+    // Insert 
+    void insert(const char *key, const int value);
+    void erase(const char *key, const int value);
+    std::vector<int> find(const char *key);
 
-    // Erase a pair of key and data
-    void erase(const std::string key, DataType data);
+  protected:
+    // The type of key, of a maximum string len of 64.
+    static const size_t kMaxKeyLen = 64 + 5;
+    class KeyType;
+
+    // The type of data
+    class DataType;
+
+    // The type of block
+    static const size_t kMinBlockSize = 128;
+    static const size_t kMaxBlockSize = 256;
+    class ListBlock;
+
+    // The maximum number of blocks
+    static const size_t kMaxBlockCnt = 1000;
+
+  protected:
+    // Get the size of ull
+    size_t size();
+
+    // Output the data of a block
+    void output(ListBlock &cur);
+
+    // Allocate a block
+    void allocate(ListBlock &cur);
+
+    // Deallocate a block
+    void deallocate(ListBlock &cur);
+
+    // Insert a data to a block
+    void insert(ListBlock &cur, const DataType &tmp);
+
+    // Erase a data from the block
+    void erase(ListBlock &cur, const DataType &tmp);
+
+    // Find some data in the block
+    std::vector<int> find(ListBlock &cur, const char *key);
+
+    // Split a block
+    ListBlock split(ListBlock &cur);
+
+    // Merge two blocks
+    void merge(ListBlock &cur, ListBlock &del);
+
+  private:
+    std::fstream file;
+    std::string file_name;
+
+  private:
+    std::set<int> free_blocks;
+    std::vector<ListBlock> blocks;
+
 };
 
 } // namespace list
-} // namespace bookstore
 
+} // namespace bookstore
 #endif
 /**
  * @file UnrolledLinkedList.cc
  * @author Conless Pan (conlesspan@outlook.com)
  * @brief The implementation for UnrolledLinkedList.h
- * @version 0.1
- * @date 2022-12-09
+ * @version 0.2
+ * @date 2022-12-14
  *
  * @copyright Copyright (c) 2022
  *
  */
 
 
+#include <algorithm>
 #include <cstring>
+#include <filesystem>
 #include <iostream>
 
-// Use to deal with exceptions
 
 namespace bookstore {
 
 namespace list {
 
 /**
- * @brief Construct a new Unrolled Linked List:: Unrolled Linked List object
- * @details Create a new ull, or inherit the data from the last test point
- * @param file_path
- * @param inherit_tag
- * @param block_size
+ * @brief Class KeyType
+ * @details Package the char array at a size of kMaxKeyLen, enable assignment and comparison.
  */
-UnrolledLinkedList::UnrolledLinkedList(const std::string file_path, const bool inherit_tag, const IndexType block_size)
-    : file_name(file_path), max_block_size(block_size) {
-    // The file_name.bin is used to storage all key and data, written in binary text. Here use it to determine whether to
-    // inherit data from former test points
-    std::ifstream input(file_name + ".bin");
+class UnrolledLinkedList::KeyType {
+  public:
+    KeyType() { memset(str, 0, sizeof(str)); }
+    KeyType(const char *_str) { memset(str, 0, sizeof(str)), strcpy(str, _str); }
+    KeyType(const KeyType &x) { memset(str, 0, sizeof(str)), strcpy(str, x.str); }
 
-    // Initialize and clear
-    cnt = 0;
-    head.clear();
-    tail.clear();
-    siz.clear();
+    bool operator<(const KeyType &x) const { return strcmp(str, x.str) < 0; }
+    bool operator>(const KeyType &x) const { return strcmp(str, x.str) > 0; }
+    bool operator==(const KeyType &x) const { return strcmp(str, x.str) == 0; }
+    bool operator!=(const KeyType &x) const { return !(*this == x); }
+    bool operator<=(const KeyType &x) const { return !(*this > x); }
+    bool operator>=(const KeyType &x) const { return !(*this < x); }
 
-    if (inherit_tag && input.good()) { // If the program should inherit data
-        // The file_name.dat is used to storage key data which was saved in RAM, i.e. cnt, head, tail and siz. So here the
-        // program first read the key data of the last ull
-        input.close();
-        input.open(file_name + ".dat");
+  public:
+    char str[kMaxKeyLen];
+};
 
-        // Inputing...
-        IndexType len; // The number of blocks, similarly hereafter
-        input >> cnt >> len;
-        while (len--) {
-            IndexType head_num, tail_num, siz_num;
-            input >> head_num >> tail_num >> siz_num;
-            head.push_back(head_num);
-            tail.push_back(tail_num);
-            siz.push_back(siz_num);
+/**
+ * @brief Class DataType
+ * @details Package the pair of key and value, enable assignment and comparison.
+ */
+class UnrolledLinkedList::DataType {
+    friend class ListBlock;
+
+  public:
+    KeyType key;
+    int value;
+    DataType() : key(), value(0) {}
+    DataType(KeyType _key, int _value) : key(_key), value(_value) {}
+    bool operator<(const DataType &x) const { return key == x.key ? value < x.value : key < x.key; }
+    bool operator>(const DataType &x) const { return key == x.key ? value > x.value : key > x.key; }
+    bool operator==(const DataType &x) const { return key == x.key && value == x.value; }
+    bool operator!=(const DataType &x) const { return !(*this == x); }
+    bool operator<=(const DataType &x) const { return !(*this > x); }
+    bool operator>=(const DataType &x) const { return !(*this < x); }
+};
+
+/**
+ * @brief Class ListBlock
+ * @details The type of a whole block, with fixed length kMaxBlockSize + 10. Split when the length of a block is greater than
+ * kMaxBlockSize.
+ */
+class UnrolledLinkedList::ListBlock {
+    // Can only be directly operated by ull class
+    friend class UnrolledLinkedList;
+
+  public:
+    ListBlock() : data(), len(0), pos(0) {}
+    ListBlock(size_t _len, int _pos) : len(_len), pos(_pos) {}
+    ~ListBlock() {}
+
+  public:
+    DataType *data;
+    DataType head, tail;
+    size_t len;
+    int pos;
+};
+
+/**
+ * @brief Construct a new Unrolled Linked List:: Unrolled Linked List object
+ * @details First judge whether to inherit the previous data. Then init the data.
+ * @param file_name
+ */
+UnrolledLinkedList::UnrolledLinkedList(const std::string &_file_name) : file_name(_file_name) {
+    std::filesystem::create_directory("data");
+    std::string log_file = "data/" + file_name + ".log";
+    std::string dat_file = "data/" + file_name + ".dat";
+    std::ifstream InputLog(log_file);
+    blocks.clear();
+    blocks.push_back(ListBlock());
+    for (int i = 1; i <= kMaxBlockCnt; i++)
+        free_blocks.insert(i);
+    if (InputLog.good()) {
+        file.open(dat_file);
+        int T;
+        InputLog >> T;
+        for (int i = 1; i <= T; i++) {
+            size_t _len;
+            int _pos;
+            InputLog >> _len >> _pos;
+            blocks.push_back(ListBlock(_len, _pos));
+            allocate(blocks[i]);
+            blocks[i].head = blocks[i].data[0];
+            blocks[i].tail = blocks[i].data[blocks[i].len - 1];
+            deallocate(blocks[i]);
+            free_blocks.erase(_pos);
         }
-    } else { // Create a new file_name.bin and reset it as a clear file
-        std::ofstream create(file_name + ".bin", std::ios::out | std::ios::trunc);
-        create.close();
+    } else {
+        std::ofstream tmp(dat_file, std::ios::out | std::ios::trunc);
+        tmp.close();
+        file.open(dat_file);
     }
-
-    // Open the binary data file
-    file.open(file_name + ".bin", std::ios::in | std::ios::out);
-
-    return;
 }
 
 /**
  * @brief Destroy the Unrolled Linked List:: Unrolled Linked List object
- * @details Destory a ull, and output its key data for reuse
+ * @details The destructor of ull, which write the log file into the file system for next use.
  */
 UnrolledLinkedList::~UnrolledLinkedList() {
-    // The file_name.dat is used to storage key data which was saved in RAM, i.e. cnt, head, tail and siz. Here the program
-    // record them in normal text mode
-    std::ofstream output(file_name + ".dat", std::ios::out | std::ios::trunc);
-    // Outputing...
-    IndexType len = head.size();
-    output << cnt << " " << len << '\n';
-    for (IndexType i = 0; i < len; i++)
-        output << head[i] << ' ' << tail[i] << ' ' << siz[i] << '\n';
-    output.close();
-    return;
+    std::string log_file = "data/" + file_name + ".log";
+    std::ofstream OutputLog(log_file, std::ios::out | std::ios::trunc);
+    int len = blocks.size() - 1;
+    OutputLog << len << '\n';
+    for (int i = 1; i <= len; i++)
+        OutputLog << blocks[i].len << ' ' << blocks[i].pos << '\n';
+    OutputLog.close();
 }
 
 /**
- * @brief Read a node in file_name.bin
- * @details Read the key of KeyType(std::string), pos of IndexType(uint), data of DataType(int) and next of IndexType(uint) in
- * the binary file
- * @param pos
- * @return Node
+ * @brief Judge whether the ull is empty
+ * @return true when empty
+ * @return false when not empty
  */
-UnrolledLinkedList::Node UnrolledLinkedList::ReadNode(IndexType pos) {
-    Node ret;
-    ret.pos = pos;
-    // Move the read head, (pos - 1) suggests that the selected data is located at the (pos - 1)th node of binary file
-    file.seekg((pos - 1) * kSizeofNode);
-
-    // Inputing...
-    KeyType str;
-    file.read(str, kSizeofKey);
-    ret.key = str;
-    file.read(reinterpret_cast<char *>(&ret.data), kSizeofData);
-    file.read(reinterpret_cast<char *>(&ret.next), kSizeofIndex);
-    return ret;
-}
+bool UnrolledLinkedList::empty() const { return blocks.size() == 0; }
 
 /**
- * @brief Write or rewrite a node in file_name.bin
- * @details Write the key of KeyType(std::string), pos of IndexType(uint), data of DataType(int) and next of IndexType(uint) in
- * the binary file
- * @param pos
- * @param now
- */
-void UnrolledLinkedList::WriteNode(IndexType pos, Node now) {
-    // Move the write head, (pos - 1) suggests that the selected data is located at the (pos - 1)th node of binary file
-    file.seekp((pos - 1) * kSizeofNode);
-
-    // Outputing...
-    KeyType key_str;
-    strcpy(key_str, now.key.c_str());
-    file.write(key_str, kSizeofKey);
-    file.write(reinterpret_cast<char *>(&now.data), kSizeofData);
-    file.write(reinterpret_cast<char *>(&now.next), kSizeofIndex);
-    return;
-}
-
-/**
- * @brief Insert a node in the selected block
- * @details Insert a new node in the selected block in order
- * @param pos
+ * @brief Insert a data into ull
+ * @details Judge the correct block to insert the data and insert it.
  * @param key
- * @param num
- * @param data
- * @return UnrolledLinkedList::IndexType
+ * @param value
  */
-UnrolledLinkedList::IndexType UnrolledLinkedList::InsertData(IndexType pos, const std::string key, IndexType num,
-                                                             DataType data) {
-    // Increase the size of the current block
-    siz[pos]++;
-
-    // Read the data of the head node of the current block
-    Node now = ReadNode(head[pos]);
-    if (key < now.key || (key == now.key && data < now.data)) {
-        head[pos] = num;
-        return now.pos;
-    }
-
-    // Search the node in the block one by one
-    while (true) {
-        // Get the pos of the next
-        IndexType nex_pos = now.next;
-
-        if (!nex_pos) { // If next is null, i.e. we've arrived to the tail, then just insert the node here
-            tail[pos] = num;
-            now.next = num;
-            WriteNode(now.pos, now);
-            return 0;
-        }
-
-        Node nex = ReadNode(nex_pos); // Or determine whether the node can be inserted between
-        if (key < nex.key || (key == nex.key && data < nex.data)) {
-            now.next = num;
-            WriteNode(now.pos, now);
-            return nex_pos;
-        }
-
-        // Move to the next node
-        now = nex;
-    }
-}
-
-/**
- * @brief Simplify the ull
- * @details Simplify a ull in two following ways. First, find if there're some large blocks and divide them. Then, find if
- * there're some consecutive small blocks and merge them.
- */
-void UnrolledLinkedList::Simplify() {
-    IndexType len = head.size();
-    for (IndexType i = 0; i < len; i++) {
-        if (siz[i] >= max_block_size * 2) { // If we find a large block, divide it from the mid
-            // Start from the head node
-            Node now = ReadNode(head[i]), las;
-            for (IndexType j = 1; j < max_block_size; j++)
-                now = ReadNode(now.next);
-            // Here now := the last node of the first block, with max_block_size
-            tail.insert(tail.begin() + i + 1, tail[i]);
-            tail[i] = now.pos;
-            IndexType tmp = now.next;
-            now.next = 0;
-            // Rewrite the tail node
-            WriteNode(now.pos, now);
-
-            // Get the data of the head node of the new block
-            now = ReadNode(tmp);
-            head.insert(head.begin() + i + 1, now.pos);
-            siz.insert(siz.begin() + i + 1, siz[i] - max_block_size);
-            siz[i] -= max_block_size;
-        } else if (i < len - 1) {
-            if (siz[i] + siz[i + 1] <= max_block_size) { // If we find a small block, which, can be merged with the next block
-                // Read the data of the tail
-                Node now = ReadNode(tail[i]);
-                // Connext it with the head of the next block
-                now.next = head[i + 1];
-                WriteNode(now.pos, now);
-                // Edit the data
-                siz[i] += siz[i + 1];
-                tail[i] = tail[i + 1];
-                siz.erase(siz.begin() + i + 1);
-                head.erase(siz.begin() + 1);
-                tail.erase(tail.begin() + 1);
-            }
-        }
-    }
-}
-
-/**
- * @brief Output the current data of ull
- *
- */
-void UnrolledLinkedList::Output() {
-    IndexType len = head.size();
-    for (IndexType i = 0; i < len; i++) {
-        std::cout << "Block " << i << '\n';
-        IndexType pos = head[i];
-        while (pos) {
-            Node now = ReadNode(pos);
-            std::cout << now.key << ' ' << now.pos << ' ' << now.data << ' ' << now.next << '\n';
-            pos = now.next;
-        }
-        std::cout << '\n';
-    }
-}
-
-/**
- * @brief Insert a pair of key and data
- * @details Insert a pair in order into the ull and maintain the size of ull
- * @param key
- * @param data
- */
-void UnrolledLinkedList::insert(const std::string key, DataType data) {
-    // Increase the count of current node
-    cnt++;
-    if (cnt == 1) { // If it is the first node
-        head.push_back(cnt);
-        tail.push_back(cnt);
-        siz.push_back(1);
-        WriteNode(cnt, Node(key, cnt, data));
-    } else { // Find a correct place to insert
-        IndexType len = head.size();
-
-        for (IndexType i = 0; i < len; i++) {
-            // If it is the last block, we have to insert it
-            if (i == len - 1) {
-                IndexType ret_pos = InsertData(i, key, cnt, data);
-                WriteNode(cnt, Node(key, cnt, data, ret_pos));
-                break;
-            }
-
-            // Or else, insert it in the first block such that the head of the next block is greater than it
-            Node nex = ReadNode(head[i + 1]);
-            if (key < nex.key || (key == nex.key && data < nex.data)) {
-                IndexType ret_pos = InsertData(i, key, cnt, data);
-                WriteNode(cnt, Node(key, cnt, data, ret_pos));
+void UnrolledLinkedList::insert(const char *key, const int value) {
+    DataType tmp(key, value);
+    int len = blocks.size() - 1;
+    if (!len) {
+        blocks.push_back(ListBlock(0, 1));
+        free_blocks.erase(1);
+        insert(blocks[1], tmp);
+    } else {
+        int len = blocks.size() - 1;
+        int pos = 0;
+        for (int i = 1; i <= len; i++) {
+            if (tmp <= blocks[i].tail) {
+                insert(blocks[i], tmp);
+                pos = i;
                 break;
             }
         }
+        if (!pos)
+            insert(blocks[pos = len], tmp);
+        if (blocks[pos].len >= kMaxBlockSize)
+            blocks.insert(blocks.begin() + pos + 1, split(blocks[pos]));
     }
-    Simplify();
-    // Output();
 }
 
 /**
- * @brief Find a vector of data by the given key
- * @details Find all of the data corresponding the given key, in the sort of the second keyword
- * @param key 
- * @return std::vector<UnrolledLinkedList::DataType> 
+ * @brief Erase a data from ull
+ * @details Find which block the data is in and erase it.
+ * @param key
+ * @param value
  */
-std::vector<UnrolledLinkedList::DataType> UnrolledLinkedList::find(const std::string key) {
-    std::vector<DataType> ret;
-    ret.clear();
-
-    // If empty, directly return the empty vector
-    if (!cnt)
-        return ret;
-
-    IndexType len = head.size();
-    for (IndexType i = 0; i < len; i++) {
-        // Search in the i-th block (0-base)
-        Node now = ReadNode(head[i]);
-        // If the min data is even greater than the key
-        if (now.key > key)
-            return ret;
-
-        // Determine whether the data can be found in the current block
-        Node tai = ReadNode(tail[i]);
-        if (tai.key >= key) {   // If possible
-            while (true) {
-                if (now.key == key) // Found
-                    ret.push_back(now.data);
-                else if (now.key > key) // Impossible then
-                    return ret;
-                if (!now.next) // Tail
-                    break;
-                now = ReadNode(now.next);
-            }
-        }
-    }
-    return ret;
-}
-
-/**
- * @brief Erase a pair of key and data
- * @details Erase a pair of given key and data, throw error when not found. Maintaining the size of the block.
- * @param key 
- * @param data 
- */
-void UnrolledLinkedList::erase(const std::string key, DataType data) {
-    // If empty, then the data cannot be found
-    if (!cnt)
+void UnrolledLinkedList::erase(const char *key, const int value) {
+    DataType tmp(key, value);
+    int len = blocks.size() - 1;
+    if (!len)
         return;
-    
-    IndexType len = head.size();
-    for (IndexType i = 0; i < len; i++) {
-        // Search in the i-th block (0-base)
-        Node now = ReadNode(head[i]);
-        if (now.key > key)
-            return;
-        Node tai = ReadNode(tail[i]);
-        if (tai.key >= key) {
-            Node las;
-            while (true) {
-                if (now.key == key && now.data == data) { // Found
-                    cnt--;
-                    siz[i]--;
-                    if (now.pos == head[i] && now.pos == tail[i]) { // The only node in the block
-                        head.erase(head.begin() + i);
-                        tail.erase(tail.begin() + i);
-                        siz.erase(siz.begin() + i);
-                    } else if (now.pos == head[i]) {  // Head node of the block
-                        head[i] = now.next;
-                    } else if (now.pos == tail[i]) {  // Tail node of the block
-                        tail[i] = las.pos;
-                        las.next = 0;
-                        WriteNode(las.pos, las);
-                    } else {  // Otherwise
-                        las.next = now.next;
-                        WriteNode(las.pos, las);
-                    }
-                    now.data = -1;  // A tag of being "erased", though not used
-                    WriteNode(now.pos, now);
-                    Simplify();
-                    return;
-                } else if (now.key > key) {
-                    return;
-                }
-                if (!now.next)
-                    break;
-                las = now;
-                now = ReadNode(now.next);
-            }
+    int pos = 0;
+    for (int i = 1; i <= len; i++) {
+        if (tmp <= blocks[i].tail) {
+            erase(blocks[i], tmp);
+            pos = i;
+            break;
         }
+    }
+    if (!pos)
+        return;
+    if (!blocks[pos].len) {
+        free_blocks.insert(blocks[pos].pos);
+        blocks.erase(blocks.begin() + pos);
+        return;
+    }
+    if (pos != 1 && blocks[pos].len + blocks[pos - 1].len <= kMinBlockSize) {
+        merge(blocks[pos - 1], blocks[pos]);
+        free_blocks.insert(blocks[pos].pos);
+        blocks.erase(blocks.begin() + pos);
+        return;
+    }
+    if (pos != len && blocks[pos].len + blocks[pos + 1].len <= kMinBlockSize) {
+        merge(blocks[pos], blocks[pos + 1]);
+        free_blocks.insert(blocks[pos + 1].pos);
+        blocks.erase(blocks.begin() + pos + 1);
+        return;
     }
     return;
 }
+
+/**
+ * @brief Find the key in ull
+ * @details Find all the values corresponding to the given key.
+ * @param key
+ * @return std::vector<int>
+ */
+std::vector<int> UnrolledLinkedList::find(const char *key) {
+    int len = blocks.size() - 1;
+    if (!len)
+        return std::vector<int>();
+    std::vector<int> ret;
+    ret.clear();
+    for (int i = 1; i <= len; i++) {
+        if (blocks[i].head.key > key)
+            break;
+        else if (blocks[i].tail.key >= key) {
+            std::vector<int> ret_tmp = find(blocks[i], key);
+            ret.insert(ret.end(), ret_tmp.begin(), ret_tmp.end());
+        }
+    }
+    return ret;
+}
+
+/**
+ * @brief Get the size of the whole ull when testing
+ * @details Count the size of each blocks and add them up.
+ * @return size_t
+ */
+size_t UnrolledLinkedList::size() {
+    size_t ret = 0;
+    for (const auto &cur : blocks)
+        ret += cur.len;
+    return ret;
+}
+
+/**
+ * @brief Output the data of a block when testing
+ * @details Output all the data of a block. Only used when debugging.
+ * @param cur
+ */
+void UnrolledLinkedList::output(ListBlock &cur) {
+    allocate(cur);
+    for (int i = 0; i < cur.len; i++)
+        std::cout << cur.data[i].key.str << " " << cur.data[i].value << '\n';
+    deallocate(cur);
+}
+
+/**
+ * @brief Allocate a block
+ * @details Register the space of a block and read it from the file system.
+ * @param cur
+ */
+void UnrolledLinkedList::allocate(ListBlock &cur) {
+    cur.data = new DataType[kMaxBlockSize];
+    file.seekg(sizeof(DataType) * kMaxBlockSize * (cur.pos - 1));
+    file.read(reinterpret_cast<char *>(cur.data), sizeof(DataType) * cur.len);
+}
+
+/**
+ * @brief Deallocate a block
+ * @details Free the space of a block and write it to the file system.
+ * @param cur
+ */
+void UnrolledLinkedList::deallocate(ListBlock &cur) {
+    // DataType *a = new DataType;
+    file.seekp(sizeof(DataType) * kMaxBlockSize * (cur.pos - 1));
+    file.write(reinterpret_cast<char *>(cur.data), sizeof(DataType) * cur.len);
+    delete[] cur.data;
+}
+
+/**
+ * @brief Insert a data to a block
+ * @details Insert a pair of key and value to the block in order. Using binary search, with total time cost O(sqrt(n))
+ * @param cur
+ * @param tmp
+ */
+void UnrolledLinkedList::insert(ListBlock &cur, const DataType &tmp) {
+    allocate(cur);
+    int pos = std::lower_bound(cur.data, cur.data + cur.len, tmp) - cur.data;
+    if (cur.data[pos] == tmp) {
+        deallocate(cur);
+        return;
+    }
+    if (!pos)
+        cur.head = tmp;
+    if (pos == cur.len)
+        cur.tail = tmp;
+    for (int i = cur.len; i >= pos + 1; i--)
+        cur.data[i] = cur.data[i - 1];
+    cur.len++;
+    cur.data[pos] = tmp;
+    deallocate(cur);
+    return;
+}
+
+/**
+ * @brief Erase a data from the block
+ * @details Delete a pair of key and value of the block in order. Using binary search, with total time cost O(sqrt(n))
+ * @param cur
+ * @param tmp
+ */
+void UnrolledLinkedList::erase(ListBlock &cur, const DataType &tmp) {
+    allocate(cur);
+    int pos = std::lower_bound(cur.data, cur.data + cur.len, tmp) - cur.data;
+    if (cur.data[pos] != tmp) {
+        deallocate(cur);
+        return;
+    }
+    if (!pos && cur.len != 1)
+        cur.head = cur.data[pos + 1];
+    if (pos == cur.len - 1 && cur.len != 1)
+        cur.tail = cur.data[pos - 1];
+    std::copy(cur.data + pos + 1, cur.data + cur.len, cur.data + pos);
+    cur.len--;
+    deallocate(cur);
+    return;
+}
+
+/**
+ * @brief Find some data in the block
+ * @details Return all the corresponding values in current block in order
+ * @param cur
+ * @param key
+ * @return std::vector<int>
+ */
+std::vector<int> UnrolledLinkedList::find(ListBlock &cur, const char *key) {
+    allocate(cur);
+    std::vector<int> ret;
+    ret.clear();
+    if (cur.len) {
+        int pos = std::lower_bound(cur.data, cur.data + cur.len, DataType(key, 0)) - cur.data;
+        for (; pos < cur.len; pos++) {
+            if (cur.data[pos].key > key)
+                break;
+            ret.push_back(cur.data[pos].value);
+        }
+    }
+    deallocate(cur);
+    return ret;
+}
+
+/**
+ * @brief Split a block
+ * @details When the size of a block is larger than expected, split into two blocks by the middle.
+ * @param cur
+ * @return UnrolledLinkedList::ListBlock
+ */
+UnrolledLinkedList::ListBlock UnrolledLinkedList::split(ListBlock &cur) {
+    ListBlock nex(cur.len, cur.pos);
+    allocate(cur);
+    allocate(nex);
+    nex.len >>= 1;
+    cur.len -= nex.len;
+    for (int i = 0; i < nex.len; i++)
+        nex.data[i] = cur.data[i + cur.len];
+    cur.tail = cur.data[cur.len - 1];
+    nex.head = nex.data[0];
+    nex.tail = nex.data[nex.len - 1];
+    deallocate(cur);
+    int nex_pos = *(free_blocks.begin());
+    free_blocks.erase(nex_pos);
+    nex.pos = nex_pos;
+    deallocate(nex);
+    return nex;
+}
+
+void UnrolledLinkedList::merge(ListBlock &cur, ListBlock &del) {
+    allocate(cur);
+    allocate(del);
+    for (int i = 0; i < del.len; i++)
+        cur.data[cur.len + i] = del.data[i];
+    cur.len += del.len;
+    cur.tail = cur.data[cur.len - 1];
+    deallocate(cur);
+    deallocate(del);
+    free_blocks.insert(del.pos);
+}
+
+} // namespace list
+} // namespace bookstore
+
+#include <bits/stdc++.h>
+#include <memory>
+
+using namespace std;
+
+namespace bookstore {
+
+namespace list {
+
+class ULLTst : public UnrolledLinkedList {
+  public:
+    ULLTst(const char *file_name) : UnrolledLinkedList(file_name) {}
+    void test1() {
+        // ListBlock a(1, 1), b(1, 2);
+        // a.data = new DataType[1];
+        // strcpy(a.data[0].key.str, "a");
+        // deallocate(a);
+        // b.data = new DataType[1];
+        // b.len = 1;
+        // strcpy(b.data[0].key.str, "b");
+        // deallocate(b);
+        // merge(a, b);
+        // allocate(a);
+        // puts(a.data[0].key.str);
+        // output(a);
+    }
+
+    void test2() {
+        // char str[kMaxKeyLen];
+        // int data;
+        // ListBlock a;
+        // int T;
+        // std::cin >> T;
+        // a.read(file);
+        // while (T--) {
+        //     int opt;
+        //     std::cin >> opt;
+        //     if (opt == 0) {
+        //         std::cin >> str >> data;
+        //         DataType tmp(str, data);
+        //         a.insert(tmp);
+        //     } else if (opt == 1) {
+        //         std::cin >> str >> data;
+        //         DataType tmp(str, data);
+        //         a.erase(tmp);
+        //     } else {
+        //         a.output();
+        //     }
+        // }
+    }
+
+    void test3() {
+        char str[kMaxKeyLen];
+        int data;
+        int T;
+        cin >> T;
+        while (T--) {
+            string opt;
+            std::cin >> opt;
+            try {
+                if (opt == "insert") {
+                    std::cin >> str >> data;
+                    insert(str, data);
+                } else if (opt == "delete") {
+                    std::cin >> str >> data;
+                    erase(str, data);
+                } else if (opt == "find") {
+                    std::cin >> str;
+                    std::vector<int> ret = find(str);
+                    if (!ret.size())
+                        std::cout << "null\n";
+                    else {
+                        for (const auto &num : ret)
+                            std::cout << num << ' ';
+                        std::cout << '\n';
+                    }
+                }
+                // std::cout << "Status:\n";
+                // for (int i = 1; i <= blocks.size() - 1; i++) {
+                //     std::cout << "Block " << i << ":\n";
+                //     output(blocks[i]);
+                // }
+                // std::cout << '\n';
+            } catch (...) {
+            }
+        }
+    }
+};
 
 } // namespace list
 
 } // namespace bookstore
-#include <iostream>
-
 
 int main() {
-    bookstore::list::UnrolledLinkedList l("test", true);
-    int T;
-    std::cin >> T;
-    while (T--) {
-        std::string opt;
-        std::cin >> opt;
-        if (opt == "insert") {
-            std::string s;
-            int data;
-            std::cin >> s >> data;
-            l.insert(s, data);
-        } else if (opt == "find") {
-            std::string s;
-            std::cin >> s;
-            std::vector<int> ret = l.find(s);
-            if (!ret.size())
-                std::cout << "null";
-            else {
-                for (auto i : ret)
-                    std::cout << i << ' ';
-            }
-            std::cout << '\n';
-        } else if (opt == "delete") {
-            std::string s;
-            int data;
-            std::cin >> s >> data;
-            l.erase(s, data);
-        }
-    }
+    bookstore::list::ULLTst a("test");
+    a.test3();
     return 0;
 }
