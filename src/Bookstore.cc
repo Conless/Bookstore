@@ -1,6 +1,5 @@
 #include "Bookstore.h"
 
-#include "User/BookstoreBaseUser.h"
 #include "User/UserSystem.h"
 #include "Utils/Exception.h"
 
@@ -174,15 +173,24 @@ void Bookstore::AcceptMsg(input::BookstoreParser msg) {
     if (msg.func == QUIT)
         throw Exception(QUIT_SYSTEM, "Quit.");
     if (msg.func == SU) {
-        std::string user_id = msg.args[0];
-        // int num = users.QueryUnum(user_id);
-        // BookstoreBaseUser *user_data = GetUserData(num);
         if (msg.info == SU_NO_PASSWD) {
-
+            users.UserRegister(msg.args[0].c_str(), "", msg.args[1].c_str());
+        } else {
+            users.UserRegister(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
         }
+        return;
+    }
+    if (msg.func == LOGOUT) {
+        users.UserLogout();
+        return;
     }
     if (msg.func == REG) {
-        // users.UserRegister(msg.args[0], msg.args[1], msg.args[2]);
+        users.UserRegister(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+        return;
+    }
+    if (msg.func == PASSWD) {
+        users.ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+        return;
     }
     throw Exception(UNIMPLEMENTED, "Bookstore doesn't support this operation.");
 }

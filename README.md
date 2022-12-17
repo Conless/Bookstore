@@ -86,8 +86,8 @@ class UserSystem {
     void UserLogout();
 
   private:
-    std::unordered_map<std::string, BookstoreBaseUser *> user_table;
-    BookstoreBaseUser *current_user;
+    std::unordered_map<std::string, BookstoreUser *> user_table;
+    BookstoreUser *current_user;
 };
 ```
 
@@ -131,7 +131,7 @@ HW5-Bookstore-2022
    ├─ Exception.h
    ├─ main.cc
    ├─ User
-   │  ├─ BookstoreBaseUser.h
+   │  ├─ BookstoreUser.h
    │  ├─ BookstoreManager.h
    │  └─ UserSystem.h
    ├─ utils.cc

@@ -41,12 +41,12 @@ class UnrolledLinkedList {
 
     // Insert 
     void insert(const char *key, const int value);
-    void erase(const char *key, const int value);
+    int erase(const char *key, const int value);
     std::vector<int> find(const char *key);
 
   protected:
     // The type of key, of a maximum string len of 64.
-    static const size_t kMaxKeyLen = 64 + 5;
+    static const size_t kMaxKeyLen = 64;
     class KeyType;
 
     // The type of data
@@ -73,11 +73,13 @@ class UnrolledLinkedList {
     // Deallocate a block
     void deallocate(ListBlock &cur);
 
+    virtual bool is_same(const DataType &data, const DataType &tmp);
+
     // Insert a data to a block
     void insert(ListBlock &cur, const DataType &tmp);
 
     // Erase a data from the block
-    void erase(ListBlock &cur, const DataType &tmp);
+    int erase(ListBlock &cur, const DataType &tmp);
 
     // Find some data in the block
     std::vector<int> find(ListBlock &cur, const char *key);
@@ -85,20 +87,33 @@ class UnrolledLinkedList {
     // Split a block
     ListBlock split(ListBlock &cur);
 
+    void merge_try(int pos);
+
     // Merge two blocks
     void merge(ListBlock &cur, ListBlock &del);
 
   private:
+    // Info of the file system
     std::fstream file;
     std::string file_name;
 
   private:
+    // Info of the block system
     std::set<int> free_blocks;
     std::vector<ListBlock> blocks;
+};
 
+class UnrolledLinkedMap : public UnrolledLinkedList {
+  public:
+    UnrolledLinkedMap(const std::string _file_name) : UnrolledLinkedList(_file_name) {}
+    int erase(const char *key);
+    int find(const char *key);
+  protected:
+    bool is_same(const DataType &data, const DataType &tmp) override;
 };
 
 } // namespace list
 
 } // namespace bookstore
+
 #endif

@@ -33,9 +33,6 @@ class BookSystem {
     void SearchByKeyword(const std::string &keyword);
 
     void BuyBook(const std::string &isbn, const int &quantity);
-
-  private:
-    std::string sel_isbn;
 };
 
 } // namespace book

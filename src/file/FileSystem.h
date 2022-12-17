@@ -1,47 +1,46 @@
+#include <bits/types/FILE.h>
+#include <filesystem>
 #include <fstream>
+#include <ostream>
 #include <string>
 
 namespace bookstore {
 
 namespace file {
 
-/**
- * @brief Class BaseBaseFileSystem
- * @details The base class of the file system
- * @tparam DataType
- */
-class BaseFileSystem {
+template <class DataType> class BaseFileSystem {
   public:
-    // Constructor of the file system, file name required
-    BaseFileSystem(const char *file_name) { f.open(file_name, std::ios::in | std::ios::out); }
-    // Destructor of the file system
-    ~BaseFileSystem() {}
-
-  public:
-    template <class DataType> void operator>>(DataType &value) { f.read(reinterpret_cast<char *>(&value), sizeof(value)); }
-    template <class DataType>  void operator<<(DataType value) { f.write(reinterpret_cast<char *>(&value), sizeof(value)); }
-
-  protected:
-    std::fstream f;
-};
-
-class BlockedFileSystem : public BaseFileSystem {
-  public:
-    BlockedFileSystem(const char *file_name, const size_t _BlockSize) : BaseFileSystem(file_name), BlockSize(_BlockSize) {}
-    ~BlockedFileSystem() {}
-    template <class DataType> void operator>>(DataType &value) { this->f.read(reinterpret_cast<char *>(&value), BlockSize); }
-    template <class DataType> void operator<<(DataType value) {
-        this->f.write(reinterpret_cast<char *>(&value), BlockSize);
-        this->f.flush();
+    explicit BaseFileSystem(const std::string _file_name) : file_name(_file_name) {
+        std::filesystem::create_directories("data");
+        std::ifstream checker("data/" + file_name + ".dat");
+        if (!checker.good())
+            std::ofstream creater("data/" + file_name + ".dat");
+        checker.close();
+        file.open("data/" + file_name + ".dat");
+    }
+    virtual ~BaseFileSystem() = default;
+    void insert(int pos, DataType data) {
+        file.seekp(sizeof(DataType) * (pos - 1));
+        file.write(reinterpret_cast<char *>(&data), sizeof(DataType));
+    }
+    void erase(int pos) {
+        DataType tmp = DataType();
+        file.seekp(sizeof(DataType) * (pos - 1));
+        file.write(reinterpret_cast<char *>(&tmp), sizeof(DataType));
+    }
+    DataType find(int pos) {
+        DataType ret;
+        file.seekg(sizeof(DataType) * (pos - 1));
+        file.read(reinterpret_cast<char *>(&ret), sizeof(DataType));
+        return ret;
     }
 
-  public:
-    void moveg(int pos) { this->f.seekg(pos * BlockSize); }
-    void movep(int pos) { this->f.seekp(pos * BlockSize); }
-
   private:
-    size_t BlockSize;
+    std::fstream file;
+    std::string file_name;
+    size_t size;
 };
+
 
 } // namespace file
 

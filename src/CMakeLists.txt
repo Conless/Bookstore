@@ -6,6 +6,7 @@ file(GLOB SRC_LIST
     *.cc
     Book/*.cc
     File/*.cc
+    List/*.cc
     Utils/*.cc
     User/*.cc
 )
