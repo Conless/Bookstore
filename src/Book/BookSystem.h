@@ -1,9 +1,24 @@
-#ifndef BOOK_SYSTEM_H
-#define BOOK_SYSTEM_H
+#ifndef BOOKSTORE_BOOKSYSTEM_H
+#define BOOKSTORE_BOOKSYSTEM_H
 
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "File/FileSystem.h"
+#include "List/UnrolledLinkedList.h"
+
+
+
+namespace bookstore {
+
+namespace book {
+
+const int kMaxISBNLen = 25;
+const int kMaxBookLen = 65;
+
+using map = list::UnrolledLinkedListUnique<kMaxISBNLen>;
+using multimap = list::UnrolledLinkedList<kMaxBookLen>;
 
 class CustomBook {
   public:
@@ -11,16 +26,36 @@ class CustomBook {
     void BuyIt(const int &quantity);
     bool operator<(const CustomBook &num);
 
-  private:
-    std::string isbn, name;
-    std::unordered_map<std::string, bool> keyword;
+  public:
+    list::KeyType<kMaxISBNLen> isbn;
+    list::KeyType<kMaxBookLen> name, author;
+    std::vector<list::KeyType<kMaxBookLen>> keyword;
     int quantity;
     double price, total_cost;
 };
 
-namespace bookstore {
+class BookFileSystem : public file::BaseFileSystem<CustomBook> {
+  public:
+    BookFileSystem();
+    ~BookFileSystem() = default;
+    void insert(const char *isbn, const CustomBook &data);
+    void erase(const char *isbn);
+    void edit(const char *uid, const CustomBook &data);
+    std::vector<CustomBook> find_by_isbn(const char *isbn);
+    std::vector<CustomBook> find_by_name(const char *isbn);
+    std::vector<CustomBook> find_by_author(const char *isbn);
+    std::vector<CustomBook> find_by_keyword(const char *isbn);
 
-namespace book {
+  public:
+    void output();
+
+  private:
+    int siz = 0;
+    map isbn_table;
+    multimap name_table;
+    multimap author_table;
+    multimap key_table;
+};
 
 class BookSystem {
   public:

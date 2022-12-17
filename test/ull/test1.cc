@@ -10,9 +10,9 @@ namespace bookstore {
 
 namespace list {
 
-class ULLTst : public UnrolledLinkedMap {
+class ULLTst : public UnrolledLinkedList<70> {
   public:
-    ULLTst(const char *file_name) : UnrolledLinkedMap(file_name) {}
+    ULLTst(const char *file_name) : UnrolledLinkedList(file_name) {}
     void test1() {
         // ListBlock a(1, 1), b(1, 2);
         // a.data = new DataType[1];
@@ -53,7 +53,7 @@ class ULLTst : public UnrolledLinkedMap {
     }
 
     void test3() {
-        char str[kMaxKeyLen];
+        char str[70];
         int data;
         int T;
         cin >> T;
@@ -65,15 +65,18 @@ class ULLTst : public UnrolledLinkedMap {
                     std::cin >> str >> data;
                     insert(str, data);
                 } else if (opt == "delete") {
-                    std::cin >> str;
-                    erase(str);
+                    std::cin >> str >> data;
+                    erase(str, data);
                 } else if (opt == "find") {
                     std::cin >> str;
-                    int ret = find(str);
-                    if (ret == -1)
+                    auto ret = find(str);
+                    if (ret.size() == 0)
                         std::cout << "null\n";
-                    else
-                        std::cout << ret << '\n';
+                    else {
+                        for (auto x : ret)
+                            std::cout << x << ' ';
+                        std::cout << '\n';
+                    }
                 }
                 // std::cout << "Status:\n";
                 // for (int i = 1; i <= blocks.size() - 1; i++) {

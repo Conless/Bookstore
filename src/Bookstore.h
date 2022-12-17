@@ -74,6 +74,9 @@ class Bookstore {
     void PrintData();
     void AcceptMsg(input::BookstoreParser);
 
+  public:
+    void output();
+
   private:
     user::UserSystem users;
     book::BookSystem books;

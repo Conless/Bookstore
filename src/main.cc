@@ -27,6 +27,7 @@ int main(int argc, char *argv[]) {
             // TODO
             std::cout << err.msg << std::endl;
         }
+        master.output();
     }
     return 0;
 }

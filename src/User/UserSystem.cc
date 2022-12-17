@@ -8,16 +8,16 @@ namespace bookstore {
 
 namespace user {
 
-BookstoreUser::BookstoreUser(const char *_user_id, const char *_user_name, const char *_user_password, const int _iden) {
+BookstoreUser::BookstoreUser(const char *_user_id, const char *_user_name, const char *_user_pswd, const int _iden) {
     strcpy(id, _user_id);
     strcpy(name, _user_name);
-    strcpy(password, _user_password);
+    strcpy(pswd, _user_pswd);
     iden = Identity(_iden);
 }
 
 UserFileSystem::UserFileSystem() : BaseFileSystem("user"), uid_table("uid"), siz(0) {}
 
-void UserFileSystem::insert(const char *uid, BookstoreUser data) {
+void UserFileSystem::insert(const char *uid, const BookstoreUser &data) {
     uid_table.insert(uid, ++siz);
     BaseFileSystem::insert(siz, data);
 }
@@ -27,53 +27,62 @@ void UserFileSystem::erase(const char *uid) {
     BaseFileSystem::erase(pos);
 }
 
-void UserFileSystem::edit(const char *uid, BookstoreUser data) {
+void UserFileSystem::edit(const char *uid, const BookstoreUser &data) {
     int pos = uid_table.find(uid);
     BaseFileSystem::insert(pos, data);
 }
 
 BookstoreUser UserFileSystem::find(const char *uid) {
     int pos = uid_table.find(uid);
+    if (pos == -1)
+        throw Exception(UNKNOWN, "No found uid");
     return BaseFileSystem::find(pos);
 }
 
-UserSystem::UserSystem() {
-    // TODO
-    BookstoreUser visitor("", "", "", 0);
-    user_table.insert("", visitor);
-    user_stack.push(std::make_pair(visitor, ""));
+void UserFileSystem::output() {
+    for (int i = 1; i <= siz; i++) {
+        BookstoreUser user = BaseFileSystem::find(i);
+        printf("ID=%s Name=%s Pswd=%s Iden=%d\n", user.id, user.name, user.pswd, user.iden);
+    }
 }
 
-void UserSystem::UserRegister(const char *user_id, const char *user_password, const char *user_name) {
-    BookstoreUser tmp(user_id, user_password, user_name, 1);
+UserSystem::UserSystem() {
+    user_table.insert("root", BookstoreUser("root", "root", "sjtu", 7));
+    BookstoreUser guest("guest", "guest", "123", 0);
+    user_table.insert("guest", guest);
+    user_stack.push(std::make_pair(guest, ""));
+}
+
+void UserSystem::UserRegister(const char *user_id, const char *user_name, const char *user_pswd) {
+    BookstoreUser tmp(user_id, user_name, user_pswd, 1);
     user_table.insert(user_id, tmp);
 }
 
-void UserSystem::UserLogin(const char *user_id, const char *user_password) {
+void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
     BookstoreUser cur = user_stack.top().first;
     BookstoreUser tmp = user_table.find(user_id);
-    if (cur.iden > tmp.iden || !strcmp(user_password, tmp.password))
+    if (cur.iden > tmp.iden || !strcmp(user_pswd, tmp.pswd))
         user_stack.push(std::make_pair(tmp, ""));
     else
-        throw Exception(UNKNOWN, "Wrong password!");
+        throw Exception(UNKNOWN, "Wrong pswd!");
 }
 void UserSystem::UserLogout() {
     BookstoreUser cur = user_stack.top().first;
     user_stack.pop();
     user_table.edit(cur.id, cur);
 }
-void UserSystem::ModifyPassword(const char *user_id, const char *cur_password, const char *new_password) {
+void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd, const char *new_pswd) {
     BookstoreUser cur = user_stack.top().first;
     BookstoreUser tmp = user_table.find(user_id);
-    if (cur.iden > tmp.iden || !strcmp(cur_password, tmp.password)) {
-        strcpy(tmp.password, new_password);
+    if (cur.iden > tmp.iden || !strcmp(cur_pswd, tmp.pswd)) {
+        strcpy(tmp.pswd, new_pswd);
         user_table.edit(tmp.id, tmp);
     } else
-        throw Exception(UNKNOWN, "Wrong password!");
+        throw Exception(UNKNOWN, "Wrong pswd!");
 }
-void UserSystem::UserAdd(const char *user_id, const char *user_password, const int iden, const char *user_name) {
+void UserSystem::UserAdd(const char *user_id, const char *user_name, const char *user_pswd, const int iden) {
     BookstoreUser cur = user_stack.top().first;
-    BookstoreUser tmp(user_id, user_name, user_password, iden);
+    BookstoreUser tmp(user_id, user_name, user_pswd, iden);
     if (cur.iden <= iden)
         throw Exception(UNKNOWN, "Identity!");
     try {
@@ -87,6 +96,12 @@ void UserSystem::UserErase(const char *user_id) {
     if (cur.iden <= tmp.iden)
         throw Exception(UNKNOWN, "Identity!");
     user_table.erase(user_id);
+}
+
+void UserSystem::output() {
+    printf("User data:\n");
+    user_table.output();
+    printf("\n");
 }
 
 } // namespace user

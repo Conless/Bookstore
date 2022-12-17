@@ -152,7 +152,7 @@ namespace list {
  * @param inherit_tag
  * @param block_size
  */
-UnrolledLinkedList::UnrolledLinkedList(const std::string file_path, const bool inherit_tag, const IndexType block_size)
+UnrolledLinkedList<kMaxKeyLen>::UnrolledLinkedList(const std::string file_path, const bool inherit_tag, const IndexType block_size)
     : file_name(file_path), max_block_size(block_size) {
 
     // Initialize and clear
@@ -215,7 +215,7 @@ UnrolledLinkedList::UnrolledLinkedList(const std::string file_path, const bool i
  * @brief Destroy the Unrolled Linked List:: Unrolled Linked List object
  * @details Destory a ull, and output its key data for reuse
  */
-UnrolledLinkedList::~UnrolledLinkedList() {
+UnrolledLinkedList<kMaxKeyLen>::~UnrolledLinkedList() {
     if (cur == RAMStorage) {
         std::ofstream output_tmp(file_name + ".dat", std::ios::out | std::ios::trunc);
         IndexType len_tmp = head.size();
@@ -247,7 +247,7 @@ UnrolledLinkedList::~UnrolledLinkedList() {
  * @param pos
  * @return Node
  */
-UnrolledLinkedList::Node UnrolledLinkedList::ReadNode(IndexType pos) {
+UnrolledLinkedList<kMaxKeyLen>::Node UnrolledLinkedList<kMaxKeyLen>::ReadNode(IndexType pos) {
     if (cur == RAMStorage)
         return ram[pos - 1];
     double fir = (double)clock() / CLOCKS_PER_SEC;
@@ -272,7 +272,7 @@ UnrolledLinkedList::Node UnrolledLinkedList::ReadNode(IndexType pos) {
  * @param pos
  * @param now
  */
-void UnrolledLinkedList::WriteNode(IndexType pos, Node now) {
+void UnrolledLinkedList<kMaxKeyLen>::WriteNode(IndexType pos, Node now) {
     if (cur == RAMStorage) {
         ram[pos - 1] = now;
         return;
@@ -298,9 +298,9 @@ void UnrolledLinkedList::WriteNode(IndexType pos, Node now) {
  * @param key
  * @param num
  * @param data
- * @return UnrolledLinkedList::IndexType
+ * @return UnrolledLinkedList<kMaxKeyLen>::IndexType
  */
-UnrolledLinkedList::IndexType UnrolledLinkedList::InsertData(IndexType pos, const std::string key, IndexType num,
+UnrolledLinkedList<kMaxKeyLen>::IndexType UnrolledLinkedList<kMaxKeyLen>::InsertData(IndexType pos, const std::string key, IndexType num,
                                                              DataType data) {
     // Increase the size of the current block
     siz[pos]++;
@@ -346,7 +346,7 @@ UnrolledLinkedList::IndexType UnrolledLinkedList::InsertData(IndexType pos, cons
  * @details Simplify a ull in two following ways. First, find if there're some large blocks and divide them. Then, find if
  * there're some consecutive small blocks and merge them.
  */
-void UnrolledLinkedList::Simplify() {
+void UnrolledLinkedList<kMaxKeyLen>::Simplify() {
     IndexType len = head.size();
     for (int i = 0; i < len; i++) {
         if (!siz[i]) {
@@ -401,7 +401,7 @@ void UnrolledLinkedList::Simplify() {
  * @brief Output the current data of ull
  *
  */
-void UnrolledLinkedList::Output() {
+void UnrolledLinkedList<kMaxKeyLen>::Output() {
     IndexType len = head.size();
     std::cout << cnt << '\n';
     for (IndexType i = 0; i < len; i++) {
@@ -422,7 +422,7 @@ void UnrolledLinkedList::Output() {
  * @param key
  * @param data
  */
-void UnrolledLinkedList::insert(const std::string key, DataType data) {
+void UnrolledLinkedList<kMaxKeyLen>::insert(const std::string key, DataType data) {
     // Increase the count of current node
     cnt++;
     if (cnt == 1) { // If it is the first node
@@ -458,9 +458,9 @@ void UnrolledLinkedList::insert(const std::string key, DataType data) {
  * @brief Find a vector of data by the given key
  * @details Find all of the data corresponding the given key, in the sort of the second keyword
  * @param key
- * @return std::vector<UnrolledLinkedList::DataType>
+ * @return std::vector<UnrolledLinkedList<kMaxKeyLen>::DataType>
  */
-std::vector<UnrolledLinkedList::DataType> UnrolledLinkedList::find(const std::string key) {
+std::vector<UnrolledLinkedList<kMaxKeyLen>::DataType> UnrolledLinkedList<kMaxKeyLen>::find(const std::string key) {
     std::vector<DataType> ret;
     ret.clear();
 
@@ -500,7 +500,7 @@ std::vector<UnrolledLinkedList::DataType> UnrolledLinkedList::find(const std::st
  * @param key
  * @param data
  */
-void UnrolledLinkedList::erase(const std::string key, DataType data) {
+void UnrolledLinkedList<kMaxKeyLen>::erase(const std::string key, DataType data) {
     // If empty, then the data cannot be found
     if (!cnt)
         return;

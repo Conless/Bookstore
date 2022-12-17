@@ -12,22 +12,93 @@
 #ifndef BOOKSTORE_LIST_ULL_H
 #define BOOKSTORE_LIST_ULL_H
 
-#include <string>
 #include <fstream>
-#include <vector>
 #include <set>
+#include <string>
+#include <cstring>
+#include <vector>
 
 namespace bookstore {
 
 namespace list {
 
+
+/**
+ * @brief Class KeyType
+ * @details Package the char array at a size of kMaxKeyLen, enable assignment
+ * and comparison.
+ */
+template <size_t kMaxKeyLen> class KeyType {
+  public:
+    KeyType() { memset(str, 0, sizeof(str)); }
+    KeyType(const char *_str) {
+        memset(str, 0, sizeof(str)), strcpy(str, _str);
+    }
+    KeyType(const KeyType &x) {
+        memset(str, 0, sizeof(str)), strcpy(str, x.str);
+    }
+
+    bool operator<(const KeyType &x) const { return strcmp(str, x.str) < 0; }
+    bool operator>(const KeyType &x) const { return strcmp(str, x.str) > 0; }
+    bool operator==(const KeyType &x) const { return strcmp(str, x.str) == 0; }
+    bool operator!=(const KeyType &x) const { return !(*this == x); }
+    bool operator<=(const KeyType &x) const { return !(*this > x); }
+    bool operator>=(const KeyType &x) const { return !(*this < x); }
+
+  public:
+    char str[kMaxKeyLen];
+};
+
+/**
+ * @brief Class DataType
+ * @details Package the pair of key and value, enable assignment and comparison.
+ */
+template <size_t kMaxKeyLen> class DataType {
+  public:
+    KeyType<kMaxKeyLen> key;
+    int value;
+    DataType() : key(), value(0) {}
+    DataType(KeyType<kMaxKeyLen> _key, int _value) : key(_key), value(_value) {}
+    bool operator<(const DataType &x) const {
+        return key == x.key ? value < x.value : key < x.key;
+    }
+    bool operator>(const DataType &x) const {
+        return key == x.key ? value > x.value : key > x.key;
+    }
+    bool operator==(const DataType &x) const {
+        return key == x.key && value == x.value;
+    }
+    bool operator!=(const DataType &x) const { return !(*this == x); }
+    bool operator<=(const DataType &x) const { return !(*this > x); }
+    bool operator>=(const DataType &x) const { return !(*this < x); }
+};
+
+/**
+ * @brief Class ListBlock
+ * @details The type of a whole block, with fixed length kMaxBlockSize + 10.
+ * Split when the length of a block is greater than kMaxBlockSize.
+ */
+template <size_t kMaxKeyLen> class ListBlock {
+  public:
+    ListBlock() : data(), len(0), pos(0) {}
+    ListBlock(size_t _len, size_t _pos) : len(_len), pos(_pos) {}
+    ~ListBlock() {}
+
+  public:
+    DataType<kMaxKeyLen> *data;
+    DataType<kMaxKeyLen> head, tail;
+    size_t len;
+    size_t pos;
+};
+
 /**
  * @brief class UnrolledLinkedList
- * @details The main part of the data structure, with the operations below supported
+ * @details The main part of the data structure, with the operations below
+ supported
     - Insert, delete, find a data in O(sqrt(n))
     - Running with ram space O(sqrt(n)) and file space O(n)
  */
-class UnrolledLinkedList {
+template <size_t kMaxKeyLen> class UnrolledLinkedList {
   public:
     // The constructor of ull
     UnrolledLinkedList(const std::string &file_name);
@@ -39,23 +110,15 @@ class UnrolledLinkedList {
     // Judge whether the ull is empty
     bool empty() const;
 
-    // Insert 
-    void insert(const char *key, const int value);
-    int erase(const char *key, const int value);
-    std::vector<int> find(const char *key);
+    // Insert
+    void insert(const KeyType<kMaxKeyLen> &key, const int value);
+    int erase(const KeyType<kMaxKeyLen> &key, const int value);
+    std::vector<int> find(const KeyType<kMaxKeyLen> &key);
 
   protected:
-    // The type of key, of a maximum string len of 64.
-    static const size_t kMaxKeyLen = 64;
-    class KeyType;
-
-    // The type of data
-    class DataType;
-
     // The type of block
     static const size_t kMinBlockSize = 128;
     static const size_t kMaxBlockSize = 256;
-    class ListBlock;
 
     // The maximum number of blocks
     static const size_t kMaxBlockCnt = 1000;
@@ -65,32 +128,32 @@ class UnrolledLinkedList {
     size_t size();
 
     // Output the data of a block
-    void output(ListBlock &cur);
+    void output(ListBlock<kMaxKeyLen> &cur);
 
     // Allocate a block
-    void allocate(ListBlock &cur);
+    void allocate(ListBlock<kMaxKeyLen> &cur);
 
     // Deallocate a block
-    void deallocate(ListBlock &cur);
+    void deallocate(ListBlock<kMaxKeyLen> &cur);
 
-    virtual bool is_same(const DataType &data, const DataType &tmp);
+    virtual bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp);
 
     // Insert a data to a block
-    void insert(ListBlock &cur, const DataType &tmp);
+    void insert(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
 
     // Erase a data from the block
-    int erase(ListBlock &cur, const DataType &tmp);
+    int erase(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
 
     // Find some data in the block
-    std::vector<int> find(ListBlock &cur, const char *key);
+    std::vector<int> find(ListBlock<kMaxKeyLen> &cur, const KeyType<kMaxKeyLen> &key);
 
     // Split a block
-    ListBlock split(ListBlock &cur);
+    ListBlock<kMaxKeyLen> split(ListBlock<kMaxKeyLen> &cur);
 
     void merge_try(int pos);
 
     // Merge two blocks
-    void merge(ListBlock &cur, ListBlock &del);
+    void merge(ListBlock<kMaxKeyLen> &cur, ListBlock<kMaxKeyLen> &del);
 
   private:
     // Info of the file system
@@ -100,16 +163,19 @@ class UnrolledLinkedList {
   private:
     // Info of the block system
     std::set<int> free_blocks;
-    std::vector<ListBlock> blocks;
+    std::vector<ListBlock<kMaxKeyLen>> blocks;
 };
 
-class UnrolledLinkedMap : public UnrolledLinkedList {
+template <size_t kMaxKeyLen>
+class UnrolledLinkedListUnique : public UnrolledLinkedList<kMaxKeyLen> {
   public:
-    UnrolledLinkedMap(const std::string _file_name) : UnrolledLinkedList(_file_name) {}
+    UnrolledLinkedListUnique(const std::string _file_name)
+        : UnrolledLinkedList<kMaxKeyLen>(_file_name) {}
     int erase(const char *key);
     int find(const char *key);
+
   protected:
-    bool is_same(const DataType &data, const DataType &tmp) override;
+    bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp) override;
 };
 
 } // namespace list

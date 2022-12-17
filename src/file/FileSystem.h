@@ -1,4 +1,6 @@
-#include <bits/types/FILE.h>
+#ifndef BOOKSTORE_FILESYSTEM_H
+#define BOOKSTORE_FILESYSTEM_H
+
 #include <filesystem>
 #include <fstream>
 #include <ostream>
@@ -19,9 +21,9 @@ template <class DataType> class BaseFileSystem {
         file.open("data/" + file_name + ".dat");
     }
     virtual ~BaseFileSystem() = default;
-    void insert(int pos, DataType data) {
+    void insert(int pos, const DataType &data) {
         file.seekp(sizeof(DataType) * (pos - 1));
-        file.write(reinterpret_cast<char *>(&data), sizeof(DataType));
+        file.write(reinterpret_cast<const char *>(&data), sizeof(DataType));
     }
     void erase(int pos) {
         DataType tmp = DataType();
@@ -45,3 +47,5 @@ template <class DataType> class BaseFileSystem {
 } // namespace file
 
 } // namespace bookstore
+
+#endif

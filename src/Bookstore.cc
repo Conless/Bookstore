@@ -2,6 +2,7 @@
 
 #include "User/UserSystem.h"
 #include "Utils/Exception.h"
+#include <string>
 
 namespace bookstore {
 
@@ -174,9 +175,9 @@ void Bookstore::AcceptMsg(input::BookstoreParser msg) {
         throw Exception(QUIT_SYSTEM, "Quit.");
     if (msg.func == SU) {
         if (msg.info == SU_NO_PASSWD) {
-            users.UserRegister(msg.args[0].c_str(), "", msg.args[1].c_str());
+            users.UserLogin(msg.args[0].c_str(), "");
         } else {
-            users.UserRegister(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+            users.UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
         }
         return;
     }
@@ -185,14 +186,21 @@ void Bookstore::AcceptMsg(input::BookstoreParser msg) {
         return;
     }
     if (msg.func == REG) {
-        users.UserRegister(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+        users.UserRegister(msg.args[0].c_str(), msg.args[2].c_str(), msg.args[1].c_str());
         return;
     }
     if (msg.func == PASSWD) {
         users.ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
         return;
     }
+    if (msg.func == USERADD) {
+        users.UserAdd(msg.args[0].c_str(), msg.args[3].c_str(), msg.args[1].c_str(), std::stoi(msg.args[2]));
+    }
     throw Exception(UNIMPLEMENTED, "Bookstore doesn't support this operation.");
+}
+
+void Bookstore::output() {
+    users.output();
 }
 
 } // namespace bookstore

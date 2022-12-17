@@ -10,7 +10,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Main sources
 include_directories(${PROJECT_SOURCE_DIR}/src)
-add_subdirectory(src)
+# add_subdirectory(src)
 
 # Test
 add_subdirectory(test)
