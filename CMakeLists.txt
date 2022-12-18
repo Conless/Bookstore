@@ -16,5 +16,13 @@ add_subdirectory(src)
 add_subdirectory(test)
 # add_subdirectory(depends/googletest)
 
-# include_directories(${PROJECT_SOURCE_DIR}/src)
-# add_executable(code ${PROJECT_SOURCE_DIR}/test/ull/test1.cc)
+file(GLOB SRC_LIST
+    src/*.cc
+    src/Book/*.cc
+    src/File/*.cc
+    src/List/*.cc
+    src/Utils/*.cc
+    src/User/*.cc
+)
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
+add_executable(code ${SRC_LIST})

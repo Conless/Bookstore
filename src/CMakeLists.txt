@@ -12,6 +12,7 @@ file(GLOB SRC_LIST
 )
 
 set(CMAKE_CXX_FLAGS "-g -std=c++17")
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_executable(${PROJECT_NAME}_run ${SRC_LIST})
 
 # target_link_libraries(${PROJECT_NAME}_run ${PROJECT_SOURCE_DIR}/depends/libull/lib/libull.a)
