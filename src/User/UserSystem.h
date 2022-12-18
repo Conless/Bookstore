@@ -13,6 +13,7 @@ namespace user {
 
 const int kMaxUserLen = 35;
 
+using UserStr = list::KeyType<kMaxUserLen>;
 using map = list::UnrolledLinkedListUnique<kMaxUserLen>;
 
 enum Identity {
@@ -25,11 +26,12 @@ enum Identity {
 class BookstoreUser {
   public:
     BookstoreUser() {}
-    BookstoreUser(const BookstoreUser &_user) : BookstoreUser(_user.id, _user.name, _user.pswd, _user.iden) {}
-    BookstoreUser(const char *_user_id, const char *_user_name, const char *_user_pswd, const int _iden);
+    BookstoreUser(const BookstoreUser &_user) : id(_user.id), name(_user.name), pswd(_user.pswd), iden(_user.iden) {}
+    BookstoreUser(const UserStr &_user_id, const UserStr &_user_name, const UserStr &_user_pswd, const Identity _user_iden) : id(_user_id), name(_user_name), pswd(_user_pswd), iden(_user_iden) {}
+    BookstoreUser(const char *_user_id, const char *_user_name, const char *_user_pswd, const int _user_iden) : id(_user_id), name(_user_name), pswd(_user_pswd), iden(Identity(_user_iden)) {}
 
   public:
-    char id[kMaxUserLen], name[kMaxUserLen], pswd[kMaxUserLen];
+    UserStr id, name, pswd;
     Identity iden;
 };
 
@@ -37,10 +39,10 @@ class UserFileSystem : public file::BaseFileSystem<BookstoreUser> {
   public:
     UserFileSystem();
     ~UserFileSystem() = default;
-    void insert(const char *uid, const BookstoreUser &data);
-    void erase(const char *uid);
-    void edit(const char *uid, const BookstoreUser &data);
-    BookstoreUser find(const char *uid);
+    void insert(const UserStr &uid, const BookstoreUser &data);
+    void erase(const UserStr &uid);
+    void edit(const UserStr &uid, const BookstoreUser &data);
+    BookstoreUser find(const UserStr &uid);
 
   public:
     void output();
@@ -66,7 +68,7 @@ class UserSystem {
     void output();
 
   private:
-    std::stack<std::pair<BookstoreUser, std::string>> user_stack;
+    std::stack<std::pair<BookstoreUser, int>> user_stack;
     UserFileSystem user_table;
 };
 

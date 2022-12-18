@@ -17,19 +17,26 @@ namespace book {
 const int kMaxISBNLen = 25;
 const int kMaxBookLen = 65;
 
+using IsbnStr = list::KeyType<kMaxISBNLen>;
+using BookStr = list::KeyType<kMaxBookLen>;
+
 using map = list::UnrolledLinkedListUnique<kMaxISBNLen>;
 using multimap = list::UnrolledLinkedList<kMaxBookLen>;
 
 class CustomBook {
   public:
-    void PrintInfo();
+    CustomBook();
+    CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line);
+
+    void PrintInfo() const;
     void BuyIt(const int &quantity);
-    bool operator<(const CustomBook &num);
+    bool operator<(const CustomBook &x) const { return isbn < x.isbn; }
 
   public:
     list::KeyType<kMaxISBNLen> isbn;
     list::KeyType<kMaxBookLen> name, author;
-    std::vector<list::KeyType<kMaxBookLen>> keyword;
+    list::KeyType<kMaxBookLen> keyword[15];
+    int keyword_cnt;
     int quantity;
     double price, total_cost;
 };
@@ -38,13 +45,13 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
   public:
     BookFileSystem();
     ~BookFileSystem() = default;
-    void insert(const char *isbn, const CustomBook &data);
-    void erase(const char *isbn);
-    void edit(const char *uid, const CustomBook &data);
-    std::vector<CustomBook> find_by_isbn(const char *isbn);
-    std::vector<CustomBook> find_by_name(const char *isbn);
-    std::vector<CustomBook> find_by_author(const char *isbn);
-    std::vector<CustomBook> find_by_keyword(const char *isbn);
+    void insert(const IsbnStr &isbn, const CustomBook &data);
+    void erase(const IsbnStr &isbn);
+    void edit(const IsbnStr &isbn, CustomBook data);
+    CustomBook FileSearchByISBN(const IsbnStr &isbn);
+    std::vector<CustomBook> FileSearchByName(const BookStr &name);
+    std::vector<CustomBook> FileSearchByAuthor(const BookStr &author);
+    std::vector<CustomBook> FileSearchByKeyword(const BookStr &keyword);
 
   public:
     void output();
@@ -61,13 +68,23 @@ class BookSystem {
   public:
     BookSystem();
     ~BookSystem();
+
+    void SelectBook(const char *isbn);
+    void ModifyBook(const char* isbn, const char *_isbn, const char *_name, const char *_author, const char *_key);
     
-    void SearchByISBN(const std::string &isbn);
-    void SearchByName(const std::string &name);
-    void SearchByAuthor(const std::string &author);
-    void SearchByKeyword(const std::string &keyword);
+    void SearchByISBN(const char *isbn);
+    void SearchByName(const char *name);
+    void SearchByAuthor(const char *author);
+    void SearchByKeyword(const char *keyword);
 
     void BuyBook(const std::string &isbn, const int &quantity);
+
+  public:
+    void output();
+    void AddBook(const char *isbn, const CustomBook &data);
+
+  private:
+    BookFileSystem book_table;
 };
 
 } // namespace book

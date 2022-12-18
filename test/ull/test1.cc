@@ -1,8 +1,7 @@
-#include "List/UnrolledLinkedList.cc"
 #include "List/UnrolledLinkedList.h"
+#include "Utils/Exception.h"
 
 #include <bits/stdc++.h>
-#include <memory>
 
 using namespace std;
 
@@ -10,7 +9,7 @@ namespace bookstore {
 
 namespace list {
 
-class ULLTst : public UnrolledLinkedList<70> {
+class ULLTst : public UnrolledLinkedList<65> {
   public:
     ULLTst(const char *file_name) : UnrolledLinkedList(file_name) {}
     void test1() {

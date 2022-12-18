@@ -12,16 +12,15 @@
 #ifndef BOOKSTORE_LIST_ULL_H
 #define BOOKSTORE_LIST_ULL_H
 
+#include <cstring>
 #include <fstream>
 #include <set>
 #include <string>
-#include <cstring>
 #include <vector>
 
 namespace bookstore {
 
 namespace list {
-
 
 /**
  * @brief Class KeyType
@@ -31,16 +30,28 @@ namespace list {
 template <size_t kMaxKeyLen> class KeyType {
   public:
     KeyType() { memset(str, 0, sizeof(str)); }
-    KeyType(const char *_str) {
-        memset(str, 0, sizeof(str)), strcpy(str, _str);
+    explicit KeyType(const char *_str) {
+        memset(str, 0, sizeof(str));
+        strcpy(str, _str);
+    }
+    KeyType operator=(const char *_str) {
+        memset(str, 0, sizeof(str));
+        strcpy(str, _str);
+        return *this;
     }
     KeyType(const KeyType &x) {
         memset(str, 0, sizeof(str)), strcpy(str, x.str);
     }
 
+    bool empty() const { return strcmp(str, "") == 0; }
     bool operator<(const KeyType &x) const { return strcmp(str, x.str) < 0; }
+    bool operator<(const char *x) const { return strcmp(str, x) < 0; }
     bool operator>(const KeyType &x) const { return strcmp(str, x.str) > 0; }
     bool operator==(const KeyType &x) const { return strcmp(str, x.str) == 0; }
+    bool operator==(const char *x) const { return strcmp(str, x) == 0; }
+    friend bool operator==(const char *x, const KeyType &y) {
+        return strcmp(y.str, x) == 0;
+    }
     bool operator!=(const KeyType &x) const { return !(*this == x); }
     bool operator<=(const KeyType &x) const { return !(*this > x); }
     bool operator>=(const KeyType &x) const { return !(*this < x); }
@@ -110,7 +121,13 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     // Judge whether the ull is empty
     bool empty() const;
 
-    // Insert
+    // Operations
+    void insert(const char *key, const int value) { insert
+    (KeyType<kMaxKeyLen>(key), value); }
+    void erase(const char *key, const int value) { erase(KeyType<kMaxKeyLen>(key), value); }
+    std::vector<int> find(const char *key) { return find(KeyType<kMaxKeyLen>(key)); }
+
+    // Operations of custom string
     void insert(const KeyType<kMaxKeyLen> &key, const int value);
     int erase(const KeyType<kMaxKeyLen> &key, const int value);
     std::vector<int> find(const KeyType<kMaxKeyLen> &key);
@@ -136,7 +153,8 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     // Deallocate a block
     void deallocate(ListBlock<kMaxKeyLen> &cur);
 
-    virtual bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp);
+    virtual bool is_same(const DataType<kMaxKeyLen> &data,
+                         const DataType<kMaxKeyLen> &tmp);
 
     // Insert a data to a block
     void insert(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
@@ -145,7 +163,8 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     int erase(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
 
     // Find some data in the block
-    std::vector<int> find(ListBlock<kMaxKeyLen> &cur, const KeyType<kMaxKeyLen> &key);
+    std::vector<int> find(ListBlock<kMaxKeyLen> &cur,
+                          const KeyType<kMaxKeyLen> &key);
 
     // Split a block
     ListBlock<kMaxKeyLen> split(ListBlock<kMaxKeyLen> &cur);
@@ -171,12 +190,19 @@ class UnrolledLinkedListUnique : public UnrolledLinkedList<kMaxKeyLen> {
   public:
     UnrolledLinkedListUnique(const std::string _file_name)
         : UnrolledLinkedList<kMaxKeyLen>(_file_name) {}
-    int erase(const char *key);
-    int find(const char *key);
+    int erase(const KeyType<kMaxKeyLen> &key);
+    int find(const KeyType<kMaxKeyLen> &key);
 
   protected:
-    bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp) override;
+    bool is_same(const DataType<kMaxKeyLen> &data,
+                 const DataType<kMaxKeyLen> &tmp) override;
 };
+
+template class UnrolledLinkedList<25>;
+template class UnrolledLinkedList<35>;
+template class UnrolledLinkedList<65>;
+template class UnrolledLinkedListUnique<25>;
+template class UnrolledLinkedListUnique<35>;
 
 } // namespace list
 

@@ -10,7 +10,7 @@
  */
 
 #include "UnrolledLinkedList.h"
-
+ 
 #include <algorithm>
 #include <cstring>
 #include <filesystem>
@@ -57,7 +57,7 @@ UnrolledLinkedList<kMaxKeyLen>::UnrolledLinkedList(
             free_blocks.erase(_pos);
         }
     } else { // Create a new data file
-        std::ofstream tmp(dat_file, std::ios::out | std::ios::trunc);
+        std::ofstream tmp(dat_file, std::ios::out);
         tmp.close();
         file.open(dat_file);
     }
@@ -73,7 +73,7 @@ UnrolledLinkedList<kMaxKeyLen>::~UnrolledLinkedList() {
     std::string log_file = "data/" + file_name + ".log";
     std::ofstream OutputLog(
         log_file,
-        std::ios::out | std::ios::trunc); // Write the log into file system
+        std::ios::out); // Write the log into file system
     int len = blocks.size() - 1;
     OutputLog << len << '\n';
     for (int i = 1; i <= len; i++)
@@ -399,14 +399,14 @@ void UnrolledLinkedList<kMaxKeyLen>::merge(ListBlock<kMaxKeyLen> &cur, ListBlock
     free_blocks.insert(del.pos); // free the block
 }
 template <size_t kMaxKeyLen>
-int UnrolledLinkedListUnique<kMaxKeyLen>::erase(const char *key) {
+int UnrolledLinkedListUnique<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key) {
     return UnrolledLinkedList<kMaxKeyLen>::erase(key, 0);
 }
 template <size_t kMaxKeyLen>
-int UnrolledLinkedListUnique<kMaxKeyLen>::find(const char *key) {
+int UnrolledLinkedListUnique<kMaxKeyLen>::find(const KeyType<kMaxKeyLen> &key) {
     std::vector<int> ret = UnrolledLinkedList<kMaxKeyLen>::find(key);
     if (ret.empty())
-        return -1;
+        throw Exception(UNKNOWN, "No such data");
     if (ret.size() >= 2)
         throw Exception(UNKNOWN, "Duplicated data");
     return ret[0];
