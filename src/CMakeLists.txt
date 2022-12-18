@@ -5,7 +5,7 @@ set(PROJECT_NAME ${CMAKE_PROJECT_NAME})
 file(GLOB SRC_LIST
     *.cc
     Book/*.cc
-    File/*.cc
+    Files/*.cc
     List/*.cc
     Utils/*.cc
     User/*.cc
