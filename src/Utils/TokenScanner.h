@@ -16,23 +16,15 @@ enum Function {
     PASSWD,
     USERADD,
     DEL,
-    SHOW,
-    BUY,
-    SEL,
-    MODIFY,
-    IMPORT
-};
-enum FunctionData {
-    DEFAULT,
-    SU_PASSWD,
-    SU_NO_PASSWD,
-    PASSWD_NO_CUR,
-    PASSWD_CUR,
     SHOW_ALL,
     SHOW_ISBN,
     SHOW_NAME,
     SHOW_AUTHOR,
     SHOW_KEYWORD,
+    BUY,
+    SEL,
+    MODIFY,
+    IMPORT
 };
 
 class BookstoreLexer : public std::vector<std::string> {
@@ -44,9 +36,8 @@ class BookstoreLexer : public std::vector<std::string> {
 class BookstoreParser {
   public:
     Function func;
-    FunctionData info;
     BookstoreLexer args;
-    BookstoreParser(Function func, FunctionData info, BookstoreLexer args) : func(func), info(info), args(args) {}
+    BookstoreParser(Function func, BookstoreLexer args) : func(func), args(args) {}
 
   public:
     BookstoreParser(const BookstoreLexer &input);

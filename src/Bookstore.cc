@@ -19,11 +19,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     if (msg.func == QUIT)
         throw NormalException(QUIT_SYSTEM);
     if (msg.func == SU) {
-        if (msg.info == SU_NO_PASSWD) {
-            users.UserLogin(msg.args[0].c_str(), "");
-        } else {
-            users.UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
-        }
+        users.UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
         return;
     }
     if (msg.func == LOGOUT) {
@@ -31,11 +27,13 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == REG) {
-        users.UserRegister(msg.args[0].c_str(), msg.args[2].c_str(), msg.args[1].c_str());
+        users.UserRegister(msg.args[0].c_str(), msg.args[2].c_str(),
+                           msg.args[1].c_str());
         return;
     }
     if (msg.func == PASSWD) {
-        users.ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+        users.ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(),
+                             msg.args[2].c_str());
         return;
     }
     if (msg.func == USERADD) {
@@ -47,17 +45,21 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         // TODO
         // users.UserDelete()
     }
-    if (msg.func == SHOW) {
-        if (msg.info == SHOW_ALL) {
+    if (msg.func == SHOW_ALL || msg.func == SHOW_ISBN ||
+        msg.func == SHOW_NAME || msg.func == SHOW_AUTHOR ||
+        msg.func == SHOW_KEYWORD) {
+        if (msg.func == SHOW_ALL) {
             // TODO
         }
-        if (msg.info == SHOW_ISBN) {
+        if (msg.func == SHOW_ISBN) {
             books.SearchByISBN(msg.args[0].c_str());
-        } else if (msg.info == SHOW_NAME) {
+        } else if (msg.func == SHOW_NAME) {
             books.SearchByName(msg.args[0].c_str());
-        } else if (msg.info == SHOW_AUTHOR) {
+        } else if (msg.func == SHOW_AUTHOR) {
             books.SearchByAuthor(msg.args[0].c_str());
-        } else if (msg.info == SHOW_KEYWORD) {
+        } else if (msg.func == SHOW_KEYWORD) {
+            if (msg.args[0].find('|') == std::string::npos)
+                throw InvalidException("More than one keywords in show");
             books.SearchByKeyword(msg.args[0].c_str());
         } else {
             throw UnknownException(UNKNOWN, "???");
@@ -72,6 +74,8 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     }
     if (msg.func == MODIFY) {
         // TODO
+        if (users.GetBook() == "")
+            throw InvalidException("Modify a book before selecting it");
         books.ModifyBook(selected.c_str(), msg.args[0].c_str(),
                          msg.args[1].c_str(), msg.args[2].c_str(),
                          msg.args[3].c_str());

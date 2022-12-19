@@ -26,6 +26,7 @@ using multimap = list::UnrolledLinkedList<kMaxBookLen>;
 class CustomBook {
   public:
     CustomBook();
+    CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
     CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line);
 
     void PrintInfo() const;

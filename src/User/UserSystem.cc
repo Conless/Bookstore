@@ -47,7 +47,7 @@ void UserFileSystem::output() {
 UserSystem::UserSystem() {
     user_table.insert(UserRoot.id, UserRoot);
     user_table.insert(UserGuest.id, UserGuest);
-    user_stack.push(std::make_pair(UserGuest, 0));
+    user_stack.push(std::make_pair(UserGuest, ""));
 }
 
 void UserSystem::UserRegister(const char *user_id, const char *user_name,
@@ -65,7 +65,7 @@ void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if ((cur.iden > tmp.iden && !strcmp(user_pswd, "")) ||
         user_pswd == tmp.pswd)
-        user_stack.push(std::make_pair(tmp, 0));
+        user_stack.push(std::make_pair(tmp, ""));
     else
         throw InvalidException("Wrong password!");
 }

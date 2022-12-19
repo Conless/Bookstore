@@ -75,12 +75,13 @@ class UserSystem {
     void UserAdd(const char *user_id, const char *user_name,
                  const char *user_pswd, const int user_iden);
     void UserErase(const char *user_id);
+    std::string GetBook();
 
   public:
     void output();
 
   private:
-    std::stack<std::pair<BookstoreUser, int>> user_stack;
+    std::stack<std::pair<BookstoreUser, std::string>> user_stack;
     UserFileSystem user_table;
 };
 

@@ -146,14 +146,17 @@ BookSystem::~BookSystem() {
 void BookSystem::SelectBook(const char *isbn) {
     try {
         book_table.FileSearchByISBN(IsbnStr(isbn));
-    } catch (const Exception &x) {
-        CustomBook tmp;
-        tmp.isbn = IsbnStr(isbn);
+    } catch (NormalException(ULL_NOT_FOUND)) {
+        CustomBook tmp(isbn);
         book_table.insert(IsbnStr(isbn), tmp);
     }
     return;
 }
-void BookSystem::ModifyBook(const char *isbn, const char *_isbn, const char *_name, const char *_author, const char *_key) {
+void BookSystem::ModifyBook(const char *isbn, const char *_isbn,
+                            const char *_name, const char *_author,
+                            const char *_key) {
+    if (!strcmp(_isbn, ""))
+        throw InvalidException("Modify a book before selecting it");
     book_table.edit(IsbnStr(isbn), CustomBook(_isbn, _name, _author, _key));
 }
 
@@ -187,4 +190,5 @@ void BookSystem::AddBook(const char *isbn, const CustomBook &data) {
 }
 
 } // namespace book
+
 } // namespace bookstore
