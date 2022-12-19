@@ -44,6 +44,7 @@ void BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
         key_table.insert(data.keyword[i], siz);
     BaseFileSystem::insert(siz, data);
 }
+
 void BookFileSystem::erase(const IsbnStr &isbn) {
     int pos = isbn_table.erase(isbn);
     CustomBook tmp = BaseFileSystem::find(pos);

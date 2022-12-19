@@ -2,6 +2,7 @@
 
 #include "User/UserSystem.h"
 #include "Utils/Exception.h"
+#include <new>
 #include <string>
 
 namespace bookstore {
@@ -16,7 +17,7 @@ Bookstore::~Bookstore() {
 void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     using namespace input;
     if (msg.func == QUIT)
-        throw Exception(QUIT_SYSTEM, "Quit.");
+        throw NormalException(QUIT_SYSTEM);
     if (msg.func == SU) {
         if (msg.info == SU_NO_PASSWD) {
             users.UserLogin(msg.args[0].c_str(), "");
@@ -59,7 +60,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         } else if (msg.info == SHOW_KEYWORD) {
             books.SearchByKeyword(msg.args[0].c_str());
         } else {
-            throw Exception(UNKNOWN, "");
+            throw UnknownException(UNKNOWN, "???");
         }
         return;
     }
@@ -79,7 +80,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     if (msg.func == IMPORT) {
         // TODO
     }
-    throw Exception(UNIMPLEMENTED, "Bookstore doesn't support this operation.");
+    throw InvalidException("Bookstore does NOT support this operation.");
 }
 
 void Bookstore::output() {

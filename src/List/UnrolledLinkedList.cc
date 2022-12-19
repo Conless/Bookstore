@@ -135,7 +135,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key,
     DataType tmp(key, value);
     int len = blocks.size() - 1, val;
     if (!len)
-        throw Exception(UNKNOWN, "Given data was not found.");
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     int pos = 0;
     for (int i = 1; i <= len; i++) {
         if (tmp <= blocks[i].tail) { // Found the block to erase from
@@ -145,7 +145,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key,
         }
     }
     if (!pos) // Not found given data
-        throw Exception(UNKNOWN, "Given data was not found.");
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     if (!blocks[pos].len) { // The block becomes empty
         free_blocks.insert(blocks[pos].pos);
         blocks.erase(blocks.begin() + pos);
@@ -262,7 +262,7 @@ void UnrolledLinkedList<kMaxKeyLen>::insert(ListBlock<kMaxKeyLen> &cur,
         (pos &&
          is_same(cur.data[pos - 1], tmp))) { // the data has been inserted
         deallocate(cur);
-        throw Exception(UNKNOWN, "Given data has already been inserted.");
+        throw NormalException(ULL_INSERTED);
     }
     if (!pos) // update the info of head and tail
         cur.head = tmp;
@@ -292,7 +292,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(ListBlock<kMaxKeyLen> &cur,
     int value = tmp.value;
     if (!is_same(cur.data[pos], tmp)) {
         deallocate(cur);
-        throw Exception(UNKNOWN, "Given data was not found.");
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     }
     if (!pos && cur.len != 1) // update the info of head and tail
         cur.head = cur.data[pos + 1];
@@ -406,9 +406,9 @@ template <size_t kMaxKeyLen>
 int UnrolledLinkedListUnique<kMaxKeyLen>::find(const KeyType<kMaxKeyLen> &key) {
     std::vector<int> ret = UnrolledLinkedList<kMaxKeyLen>::find(key);
     if (ret.empty())
-        throw Exception(UNKNOWN, "No such data");
+        throw NormalException(ULL_NOT_FOUND);
     if (ret.size() >= 2)
-        throw Exception(UNKNOWN, "Duplicated data");
+        throw NormalException(ULL_DUPLICATED);
     return ret[0];
 }
 template <size_t kMaxKeyLen>
