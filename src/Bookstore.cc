@@ -103,7 +103,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == BUY) {
-        std::pair<int, bool> quan = str_to_int(msg.args[0]);
+        std::pair<int, bool> quan = str_to_int(msg.args[1]);
         if (!quan.second)
             throw InvalidException("Buy: Number error");
         BookSystem::BuyBook(msg.args[0].c_str(), quan.first);
@@ -135,6 +135,19 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
             throw InvalidException("Import: Number error");
         BookSystem::ImportBook(UserSystem::GetBook().c_str(), quan.first,
                                tot_cost.first);
+        return;
+    }
+    if (msg.func == FINANCE) {
+        if (msg.args.size()) {
+            std::pair<int, bool> rev = str_to_int(msg.args[0]);
+            if (!rev.second)
+                throw InvalidException("Finance: Number error");
+            BookSystem::ShowFinance(rev.first);
+        } else
+            BookSystem::ShowFinance();
+        return;
+    }
+    if (msg.func == LOG) {
         return;
     }
     throw InvalidException("Bookstore does NOT support this operation.");

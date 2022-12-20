@@ -11,6 +11,9 @@ using bookstore::input::BookstoreParser;
 int output_status = 0;
 
 void JudgeInput(int argc, char *argv[]) {
+    std::ios::sync_with_stdio(false);
+    std::cout.setf(std::ios::fixed);
+    std::cout.precision(2);
     for (int i = 1; i < argc; i++) {
         if (!strcmp(argv[i], "--show-status=0"))
             output_status = 0;
@@ -27,9 +30,9 @@ void JudgeInput(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     JudgeInput(argc, argv);
     Bookstore root;
-    while (true) {
         std::string input;
-        getline(std::cin, input);
+    while (
+        getline(std::cin, input)) {
         try {
             BookstoreLexer token(input);
             BookstoreParser msg(token);

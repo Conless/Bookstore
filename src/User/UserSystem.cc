@@ -2,6 +2,7 @@
 #include "Utils/Exception.h"
 
 #include <cstring>
+#include <fstream>
 #include <utility>
 
 namespace bookstore {
@@ -13,7 +14,8 @@ const BookstoreUser UserGuest = {"DarkBluntness", "BrightSharpness",
                                  "BrightBluntness", 0};
 
 UserFileSystem::UserFileSystem()
-    : BaseFileSystem("user"), uid_table("uid"), siz(0) {}
+    : BaseFileSystem("user"), uid_table("uid"), siz(0) {
+}
 
 bool UserFileSystem::insert(const UserStr &uid, const BookstoreUser &data) {
     try {
@@ -64,9 +66,17 @@ void UserFileSystem::output() {
 }
 
 UserSystem::UserSystem() {
+    std::ifstream fin("./data/user.log");
+    if (fin.good())
+        fin >> user_table.siz;
     user_table.insert(UserRoot.id, UserRoot);
     user_table.insert(UserGuest.id, UserGuest);
     user_stack.push(std::make_pair(UserGuest, ""));
+}
+
+UserSystem::~UserSystem() {
+    std::ofstream fout("./data/user.log", std::ios::out | std::ios::trunc);
+    fout << user_table.siz;
 }
 
 void UserSystem::UserRegister(const char *user_id, const char *user_name,
@@ -101,8 +111,7 @@ void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
     if (tmp.empty())
         throw UnknownException(
             UNKNOWN, "Not found such user when modifying the password.");
-    if ((cur.iden == 7 && !strcmp(cur_pswd, "")) ||
-        cur_pswd == tmp.pswd) {
+    if ((cur.iden == 7 && !strcmp(cur_pswd, "")) || cur_pswd == tmp.pswd) {
         tmp.pswd = UserStr(new_pswd);
         user_table.edit(tmp.id, tmp);
     } else
@@ -133,9 +142,7 @@ void UserSystem::SelectBook(const char *isbn) {
     user_stack.top().second = std::string(isbn);
 }
 
-int UserSystem::GetIdentity() const {
-    return user_stack.top().first.iden;
-}
+int UserSystem::GetIdentity() const { return user_stack.top().first.iden; }
 
 std::string UserSystem::GetBook() const {
     if (user_stack.top().first == UserGuest)

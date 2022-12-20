@@ -37,7 +37,7 @@ class CustomBook {
     list::KeyType<kMaxBookLen> keyword[15];
     int keyword_cnt;
     int quantity;
-    double price, total_cost;
+    double price;
 };
 
 class BookFileSystem : public file::BaseFileSystem<CustomBook> {
@@ -47,8 +47,8 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
     bool insert(const IsbnStr &isbn, const CustomBook &data);
     bool erase(const IsbnStr &isbn);
     bool edit(const IsbnStr &isbn, CustomBook data);
-    bool dec_quantity(const IsbnStr &isbn, const int quantity);
-    void inc_quantity(const IsbnStr &isbn, const int quantity, const double cost);
+    bool inc_quantity(const IsbnStr &isbn, const int quantity, const double cost);
+    double dec_quantity(const IsbnStr &isbn, const int quantity);
     CustomBook FileSearchByISBN(const IsbnStr &isbn);
     std::vector<CustomBook> FileSearchByName(const BookStr &name);
     std::vector<CustomBook> FileSearchByAuthor(const BookStr &author);
@@ -56,9 +56,9 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
 
   public:
     void output();
+    int siz;
 
   private:
-    int siz = 0;
     map isbn_table;
     multimap name_table;
     multimap author_table;
@@ -82,12 +82,15 @@ class BookSystem {
     void BuyBook(const char *isbn, const int quantity);
     void ImportBook(const char *isbn, const int quantity, const double cost);
 
+    void ShowFinance(const int rev = -1);
+
   protected:
     void output();
     void AddBook(const char *isbn, const CustomBook &data);
 
   private:
     BookFileSystem book_table;
+    std::vector<double> total_earn, total_cost;
 };
 
 } // namespace book

@@ -54,16 +54,16 @@ class UserFileSystem : public file::BaseFileSystem<BookstoreUser> {
 
   public:
     void output();
+    int siz;
 
   private:
     map uid_table;
-    int siz;
 };
 
 class UserSystem {
   protected:
     UserSystem();
-    ~UserSystem() = default;
+    ~UserSystem();
 
     void UserRegister(const char *user_id, const char *user_name,
                       const char *user_pswd);

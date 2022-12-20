@@ -115,12 +115,15 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         if (input.size() == 1) {
             *this = BookstoreParser(SHOW_ALL, input_str);
         } else if (input[1] == "finance") {
-            if (input.size() > 3)
+            if (input.size() == 2)
+                ;
+            else if (input.size() == 3)
+                input_str.push_back(input[2]);
+            else
                 throw UnknownException(INPUT, "Show Finance message followed "
                                               "with unexpected parameters.");
-            if (input.size() == 2)
-                
-                
+            *this = BookstoreParser(FINANCE, input_str);
+
         } else {
             BookstoreLexer input_div(input[1], '=');
             if (input_div.size() != 2)
