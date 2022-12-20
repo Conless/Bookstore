@@ -14,7 +14,6 @@ add_subdirectory(src)
 
 # Test
 # add_subdirectory(test)
-# add_subdirectory(depends/googletest)
 
 file(GLOB SRC_LIST
     src/*.cc
