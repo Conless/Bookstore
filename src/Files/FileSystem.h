@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <ostream>
+#include <set>
 #include <string>
 
 namespace bookstore {
@@ -12,7 +13,8 @@ namespace file {
 
 template <class DataType> class BaseFileSystem {
   public:
-    explicit BaseFileSystem(const std::string _file_name) : file_name(_file_name) {
+    explicit BaseFileSystem(const std::string _file_name)
+        : file_name(_file_name) {
         std::filesystem::create_directories("data");
         std::ifstream checker("data/" + file_name + ".dat");
         if (!checker.good())
@@ -36,13 +38,23 @@ template <class DataType> class BaseFileSystem {
         file.read(reinterpret_cast<char *>(&ret), sizeof(DataType));
         return ret;
     }
+    std::set<DataType> search() {
+        std::set<DataType> ret;
+        ret.clear();
+        file.seekg(0);
+        while (!file.eof()) {
+            DataType tmp;
+            file.read(reinterpret_cast<char *>(&tmp), sizeof(DataType));
+            if (!tmp.empty())
+                ret.insert(tmp);
+        }
+        return ret;
+    }
 
   private:
     std::fstream file;
     std::string file_name;
-    size_t size;
 };
-
 
 } // namespace file
 

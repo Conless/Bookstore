@@ -8,8 +8,6 @@
 #include "Files/FileSystem.h"
 #include "List/UnrolledLinkedList.h"
 
-
-
 namespace bookstore {
 
 namespace book {
@@ -26,12 +24,12 @@ using multimap = list::UnrolledLinkedList<kMaxBookLen>;
 class CustomBook {
   public:
     CustomBook();
-    CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
-    CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line);
+    explicit CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
+    explicit CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line, const double _price);
 
     void PrintInfo() const;
-    void BuyIt(const int &quantity);
     bool operator<(const CustomBook &x) const { return isbn < x.isbn; }
+    bool empty() { return isbn == ""; }
 
   public:
     list::KeyType<kMaxISBNLen> isbn;
@@ -46,9 +44,11 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
   public:
     BookFileSystem();
     ~BookFileSystem() = default;
-    void insert(const IsbnStr &isbn, const CustomBook &data);
-    void erase(const IsbnStr &isbn);
-    void edit(const IsbnStr &isbn, CustomBook data);
+    bool insert(const IsbnStr &isbn, const CustomBook &data);
+    bool erase(const IsbnStr &isbn);
+    bool edit(const IsbnStr &isbn, CustomBook data);
+    bool dec_quantity(const IsbnStr &isbn, const int quantity);
+    void inc_quantity(const IsbnStr &isbn, const int quantity, const double cost);
     CustomBook FileSearchByISBN(const IsbnStr &isbn);
     std::vector<CustomBook> FileSearchByName(const BookStr &name);
     std::vector<CustomBook> FileSearchByAuthor(const BookStr &author);
@@ -66,21 +66,23 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
 };
 
 class BookSystem {
-  public:
+  protected:
     BookSystem();
     ~BookSystem();
 
     void SelectBook(const char *isbn);
-    void ModifyBook(const char* isbn, const char *_isbn, const char *_name, const char *_author, const char *_key);
-    
+    void ModifyBook(const char* isbn, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
+
+    void SearchAll();
     void SearchByISBN(const char *isbn);
     void SearchByName(const char *name);
     void SearchByAuthor(const char *author);
     void SearchByKeyword(const char *keyword);
 
-    void BuyBook(const std::string &isbn, const int &quantity);
+    void BuyBook(const char *isbn, const int quantity);
+    void ImportBook(const char *isbn, const int quantity, const double cost);
 
-  public:
+  protected:
     void output();
     void AddBook(const char *isbn, const CustomBook &data);
 

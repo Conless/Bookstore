@@ -6,6 +6,18 @@ namespace bookstore {
 
 namespace input {
 
+int to_authentity(const Function &func) {
+    if (func == QUIT || func == SU || func == REG)
+        return 0;
+    if (func == LOGOUT || func == PASSWD || func == SHOW_ALL ||
+        func == SHOW_ISBN || func == SHOW_NAME || func == SHOW_AUTHOR ||
+        func == SHOW_KEYWORD || func == BUY)
+        return 1;
+    if (func == USERADD || func == SEL || func == MODIFY || func == IMPORT)
+        return 3;
+    return 7;
+}
+
 BookstoreLexer::BookstoreLexer(const std::string &str_in_line,
                                char divide_opt) {
     int siz = str_in_line.size();
@@ -100,11 +112,15 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         return;
     }
     if (input[0] == "show") {
-        if (input.size() > 2)
-            throw UnknownException(
-                INPUT, "Show message followed with unexpected parameters.");
         if (input.size() == 1) {
             *this = BookstoreParser(SHOW_ALL, input_str);
+        } else if (input[1] == "finance") {
+            if (input.size() > 3)
+                throw UnknownException(INPUT, "Show Finance message followed "
+                                              "with unexpected parameters.");
+            if (input.size() == 2)
+                
+                
         } else {
             BookstoreLexer input_div(input[1], '=');
             if (input_div.size() != 2)
@@ -150,8 +166,9 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         if (input.size() < 2)
             throw InvalidException("Modify with no parameters");
         int siz = input.size();
-        input_str.resize(4);
-        input_str[0] = input_str[1] = input_str[2] = input_str[3] = "";
+        input_str.resize(5);
+        input_str[0] = input_str[1] = input_str[2] = input_str[3] =
+            input_str[4] = "";
         for (int i = 1; i < siz; i++) {
             BookstoreLexer input_div(input[i], '=');
             if (input_div.size() != 2)
@@ -167,13 +184,19 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
                 opt = 2;
             else if (input_div[0] == "-keyword")
                 opt = 3;
+            else if (input_div[0] == "-price")
+                opt = 4;
             else
                 throw UnknownException(
                     INPUT,
                     "Modify message followed with unexpected parameters.");
             if (input_str[opt] != "")
                 throw InvalidException("Repeated modify parameters");
-            input_str[opt] = input_div[1];
+            if (opt == 0 || opt == 4)
+                input_str[opt] = input_div[1];
+            else
+                input_str[opt] =
+                    input_div[1].substr(1, input_div[1].size() - 2);
         }
         *this = BookstoreParser(MODIFY, input_str);
         return;

@@ -289,7 +289,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(ListBlock<kMaxKeyLen> &cur,
                                           const DataType<kMaxKeyLen> &tmp) {
     allocate(cur); // allocate the current block
     int pos = std::lower_bound(cur.data, cur.data + cur.len, tmp) - cur.data;
-    int value = tmp.value;
+    int value = cur.data[pos].value;
     if (!is_same(cur.data[pos], tmp)) {
         deallocate(cur);
         throw NormalException(ULL_ERASE_NOT_FOUND);

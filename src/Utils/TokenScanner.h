@@ -24,8 +24,12 @@ enum Function {
     BUY,
     SEL,
     MODIFY,
-    IMPORT
+    IMPORT,
+    FINANCE,
+    LOG
 };
+
+int to_authentity(const Function &func);
 
 class BookstoreLexer : public std::vector<std::string> {
   public:

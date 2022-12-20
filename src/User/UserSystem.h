@@ -25,7 +25,7 @@ enum Identity {
 
 class BookstoreUser {
   public:
-    BookstoreUser() {}
+    BookstoreUser() : id(), name(), pswd(), iden(Guest) {}
     BookstoreUser(const BookstoreUser &_user)
         : id(_user.id), name(_user.name), pswd(_user.pswd), iden(_user.iden) {}
     BookstoreUser(const UserStr &_user_id, const UserStr &_user_name,
@@ -35,9 +35,8 @@ class BookstoreUser {
                   const char *_user_pswd, const int _user_iden)
         : id(_user_id), name(_user_name), pswd(_user_pswd),
           iden(Identity(_user_iden)) {}
-    bool operator==(const BookstoreUser &x) const {
-        return id == x.id && name == x.name && pswd == x.pswd;
-    }
+    bool empty() { return id == ""; }
+    bool operator==(const BookstoreUser &x) const { return id == x.id; }
 
   public:
     UserStr id, name, pswd;
@@ -48,9 +47,9 @@ class UserFileSystem : public file::BaseFileSystem<BookstoreUser> {
   public:
     UserFileSystem();
     ~UserFileSystem() = default;
-    void insert(const UserStr &uid, const BookstoreUser &data);
-    void erase(const UserStr &uid);
-    void edit(const UserStr &uid, const BookstoreUser &data);
+    bool insert(const UserStr &uid, const BookstoreUser &data);
+    bool erase(const UserStr &uid);
+    bool edit(const UserStr &uid, const BookstoreUser &data);
     BookstoreUser find(const UserStr &uid);
 
   public:
@@ -62,7 +61,7 @@ class UserFileSystem : public file::BaseFileSystem<BookstoreUser> {
 };
 
 class UserSystem {
-  public:
+  protected:
     UserSystem();
     ~UserSystem() = default;
 
@@ -75,9 +74,11 @@ class UserSystem {
     void UserAdd(const char *user_id, const char *user_name,
                  const char *user_pswd, const int user_iden);
     void UserErase(const char *user_id);
-    std::string GetBook();
+    void SelectBook(const char *isbn);
+    std::string GetBook() const;
+    int GetIdentity() const;
 
-  public:
+  protected:
     void output();
 
   private:

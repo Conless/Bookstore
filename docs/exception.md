@@ -78,41 +78,32 @@ Operate a message
 └─ Bookstore.AcceptMsg
    ├─ QUIT
    │  └─ Normal: NormalException(QUIT)
-   ├─ SU
-   │  ├─ Pass it to UserSystem::UserLogin
-   │  └─ Parameters Error: InputException
-   ├─ LOGOUT
-   │  ├─ Normal
-   │  └─ Parameters Error: InputException 
-   ├─ REG
-   │  ├─ Normal
-   │  └─ Parameters Error: InputException
-   ├─ useradd
-   │  ├─ Normal
-   │  └─ Parameters Error: InputException
-   ├─ delete
-   │  ├─ Normal
-   │  └─ Parameters Error: InputException
-   ├─ show
-   │  ├─ Show all
-   │  ├─ Show isbn
-   │  ├─ Show name
-   │  ├─ Show author
-   │  ├─ Show keyword
-   │  └─ Parameters Error: InputException
-   ├─ buy
+   ├─ CheckAuthority
+   ├─ SU, LOGOUT, REG, PASSWD, USERADD, DEL, SHOW
+   │  └─ Pass it to UserSystem or BookSystem
+   ├─ SELECT
+   │  └─ Pass it to both UserSystem and BookSystem
+   ├─ MODIFY
+   │  ├─ Judge if select a book - InvalidException
+   │  ├─ Judge if have more than a keyword - InvalidException
+   │  └─ Pass it to BookSystem
+   ├─ BUY
+   │  ├─ Judge if select a book - InvalidException
+   │  ├─ Judge if quantity is not an integer - InvalidException
+   │  └─ Pass it to BookSystem
+   ├─ IMPORT
+   │  ├─ Judge if select a book - InvalidException
+   │  ├─ Judge quantity, total cost - InvalidException
+   │  └─ Pass it to BookSystem
+   ├─ FINANCE
    │  ├─ Normal
    │  └─ Parameters Error: InputException
-   ├─ select
-   │  ├─ Normal
-   │  └─ Parameters Error: InputException
-   ├─ modify
-   │  ├─ Normal
-   │  ├─ No parameter: InvalidException
-   │  ├─ Repeated parameter: InvalidException
-   │  └─ Parameters Error: InputException
-   └─ import
-      ├─ Normal
-      └─ Parameters Error: InputException
+   ├─ LOG
+```
+
+### 用户系统指令
+
+
+
 
 

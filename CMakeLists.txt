@@ -13,7 +13,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src)
 add_subdirectory(src)
 
 # Test
-add_subdirectory(test)
+# add_subdirectory(test)
 # add_subdirectory(depends/googletest)
 
 file(GLOB SRC_LIST
