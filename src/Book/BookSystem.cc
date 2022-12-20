@@ -4,6 +4,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 
 #include "Utils/Exception.h"
 #include "Utils/TokenScanner.h"
@@ -195,14 +196,11 @@ BookSystem::BookSystem() : book_table() {
     std::ifstream fin("./data/book.log");
     if (fin.good()) {
         int len;
-        fin.read(reinterpret_cast<char *>(&book_table.siz), sizeof(int));
-        fin.read(reinterpret_cast<char *>(&len), sizeof(int));
+        fin >> book_table.siz >> len;
         total_earn.resize(len);
         total_cost.resize(len);
-        for (int i = 0; i < len; i++) {
-            fin.read(reinterpret_cast<char *>(&total_earn[i]), sizeof(int));
-            fin.read(reinterpret_cast<char *>(&total_cost[i]), sizeof(int));
-        }
+        for (int i = 0; i < len; i++)
+            fin >> total_earn[i] >> total_cost[i];
     } else {
         total_earn.push_back(0);
         total_cost.push_back(0);
@@ -211,12 +209,9 @@ BookSystem::BookSystem() : book_table() {
 BookSystem::~BookSystem() {
     std::ofstream fout("./data/book.log", std::ios::out | std::ios::trunc);
     int len = total_earn.size();
-    fout.write(reinterpret_cast<char *>(&book_table.siz), sizeof(int));
-    fout.write(reinterpret_cast<char *>(&len), sizeof(int));
-    for (int i = 0; i < len; i++) {
-        fout.write(reinterpret_cast<char *>(&total_earn[i]), sizeof(int));
-        fout.write(reinterpret_cast<char *>(&total_cost[i]), sizeof(int));
-    }
+    fout << book_table.siz << ' ' << len << '\n';
+    for (int i = 0; i < len; i++)
+        fout << std::setprecision(20) << total_earn[i] << ' ' << total_cost[i] << '\n';
 }
 
 void BookSystem::SelectBook(const char *isbn) {
