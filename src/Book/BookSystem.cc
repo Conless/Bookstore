@@ -24,6 +24,10 @@ CustomBook::CustomBook(const char *_isbn, const char *_name,
     for (int i = 0; i < ret.size(); i++)
         keyword[i] = ret[i].c_str();
     keyword_cnt = ret.size();
+    std::sort(ret.begin(), ret.end());
+    for (int i = 1; i < ret.size(); i++)
+        if (ret[i] == ret[i - 1])
+            throw InvalidException("Duplicated keyword!");
 }
 
 void CustomBook::PrintInfo() const {
