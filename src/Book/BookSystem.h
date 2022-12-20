@@ -37,6 +37,7 @@ class CustomBook {
     list::KeyType<kMaxBookLen> keyword[15];
     int keyword_cnt;
     int quantity;
+    int pos;
     double price;
 };
 
@@ -44,10 +45,11 @@ class BookFileSystem : public file::BaseFileSystem<CustomBook> {
   public:
     BookFileSystem();
     ~BookFileSystem() = default;
-    bool insert(const IsbnStr &isbn, const CustomBook &data);
+    int insert(const IsbnStr &isbn, const CustomBook &data);
     bool erase(const IsbnStr &isbn);
     bool edit(const IsbnStr &isbn, CustomBook data);
-    bool inc_quantity(const IsbnStr &isbn, const int quantity, const double cost);
+    bool edit(const int pos, CustomBook data);
+    bool inc_quantity(const int pos, const int quantity, const double cost);
     double dec_quantity(const IsbnStr &isbn, const int quantity);
     CustomBook FileSearchByISBN(const IsbnStr &isbn);
     std::vector<CustomBook> FileSearchByName(const BookStr &name);
@@ -70,8 +72,8 @@ class BookSystem {
     BookSystem();
     ~BookSystem();
 
-    void SelectBook(const char *isbn);
-    void ModifyBook(const char* isbn, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
+    int SelectBook(const char *isbn);
+    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
 
     void SearchAll();
     void SearchByISBN(const char *isbn);
@@ -80,7 +82,7 @@ class BookSystem {
     void SearchByKeyword(const char *keyword);
 
     void BuyBook(const char *isbn, const int quantity);
-    void ImportBook(const char *isbn, const int quantity, const double cost);
+    void ImportBook(const int book_pos, const int quantity, const double cost);
 
     void ShowFinance(const int rev = -1);
 

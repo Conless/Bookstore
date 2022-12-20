@@ -48,6 +48,7 @@ template <class DataType> class BaseFileSystem {
             if (!tmp.empty())
                 ret.insert(tmp);
         }
+        file.clear();
         return ret;
     }
 

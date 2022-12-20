@@ -44,12 +44,12 @@ int main(int argc, char *argv[]) {
         } catch (const InvalidException &msg) {
             std::cout << "Invalid";
             if (output_status)
-                std::cout << ": " << msg.what();
+                std::cout << ": " << msg.details();
             std::cout << '\n';
         } catch (const UnknownException &msg) {
             std::cout << "Invalid";
             if (output_status)
-                std::cout << ": " << msg.what();
+                std::cout << ": " << msg.details();
             std::cout << '\n';
         } catch (...) {
             std::cout << "?";

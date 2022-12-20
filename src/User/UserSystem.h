@@ -74,15 +74,15 @@ class UserSystem {
     void UserAdd(const char *user_id, const char *user_name,
                  const char *user_pswd, const int user_iden);
     void UserErase(const char *user_id);
-    void SelectBook(const char *isbn);
-    std::string GetBook() const;
+    void SelectBook(const int book_pos);
+    int GetBook() const;
     int GetIdentity() const;
 
   protected:
     void output();
 
   private:
-    std::stack<std::pair<BookstoreUser, std::string>> user_stack;
+    std::stack<std::pair<BookstoreUser, int>> user_stack;
     UserFileSystem user_table;
 };
 

@@ -110,22 +110,20 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SEL) {
-        UserSystem::SelectBook(msg.args[0].c_str());
-        BookSystem::SelectBook(msg.args[0].c_str());
+        int book_pos = BookSystem::SelectBook(msg.args[0].c_str());
+        UserSystem::SelectBook(book_pos);
         return;
     }
     if (msg.func == MODIFY) {
-        std::string selected_book = UserSystem::GetBook();
-        if (UserSystem::GetBook() == "")
+        int book_pos = UserSystem::GetBook();
+        if (UserSystem::GetBook() == 0)
             throw InvalidException("Modify a book before selecting it");
         std::pair<double, bool> price = str_to_double(msg.args[4]);
         if (!price.second)
             throw InvalidException("Modify: Number error");
-        BookSystem::ModifyBook(selected_book.c_str(), msg.args[0].c_str(),
+        BookSystem::ModifyBook(book_pos, msg.args[0].c_str(),
                                msg.args[1].c_str(), msg.args[2].c_str(),
                                msg.args[3].c_str(), price.first);
-        if (msg.args[0] != "")
-            UserSystem::SelectBook(msg.args[0].c_str());
         return;
     }
     if (msg.func == IMPORT) {
@@ -133,7 +131,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         std::pair<double, bool> tot_cost = str_to_double(msg.args[1]);
         if (!quan.second || !tot_cost.second)
             throw InvalidException("Import: Number error");
-        BookSystem::ImportBook(UserSystem::GetBook().c_str(), quan.first,
+        BookSystem::ImportBook(UserSystem::GetBook(), quan.first,
                                tot_cost.first);
         return;
     }

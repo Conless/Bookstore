@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cstring>
 #include <fstream>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
 #include "Utils/Exception.h"
 #include "Utils/TokenScanner.h"
@@ -40,7 +40,7 @@ BookFileSystem::BookFileSystem()
     : BaseFileSystem("book"), isbn_table("isbn"), name_table("name"),
       author_table("author"), key_table("key"), siz(0) {}
 
-bool BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
+int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
     try {
         isbn_table.insert(isbn, siz + 1);
         siz++;
@@ -49,9 +49,14 @@ bool BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
         for (int i = 0; i < data.keyword_cnt; i++)
             key_table.insert(data.keyword[i], siz);
         BaseFileSystem::insert(siz, data);
-        return 1;
-    } catch (NormalException(ULL_INSERTED)) {
-        return 0;
+        return siz;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -65,8 +70,13 @@ bool BookFileSystem::erase(const IsbnStr &isbn) {
             key_table.erase(tmp.keyword[i], siz);
         BaseFileSystem::erase(pos);
         return 1;
-    } catch (NormalException(ULL_ERASE_NOT_FOUND)) {
-        return 0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_ERASE_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -74,18 +84,32 @@ bool BookFileSystem::edit(const IsbnStr &isbn, CustomBook data) {
     int pos;
     try {
         pos = isbn_table.find(isbn);
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return 0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
+    return edit(pos, data);
+}
+
+bool BookFileSystem::edit(const int pos, CustomBook data) {
     CustomBook tmp = BaseFileSystem::find(pos);
     if (!data.isbn.empty()) {
         try {
             isbn_table.find(data.isbn);
             return 0;
-        } catch (NormalException(ULL_NOT_FOUND)) {
-            isbn_table.erase(tmp.isbn);
-            isbn_table.insert(data.isbn, pos);
-            tmp.isbn = data.isbn;
+        } catch (const NormalException &x) {
+            if (x.what() == ULL_NOT_FOUND) {
+                isbn_table.erase(tmp.isbn);
+                isbn_table.insert(data.isbn, pos);
+                tmp.isbn = data.isbn;
+            } else {
+                x.error();
+                exit(-1);
+            }
         }
     }
     if (!data.name.empty()) {
@@ -113,18 +137,15 @@ bool BookFileSystem::edit(const IsbnStr &isbn, CustomBook data) {
     return 1;
 }
 
-bool BookFileSystem::inc_quantity(const IsbnStr &isbn, const int quantity,
+bool BookFileSystem::inc_quantity(const int pos, const int quantity,
                                   const double cost) {
-    try {
-        int pos = isbn_table.find(isbn);
-        CustomBook tmp = BaseFileSystem::find(pos);
-        tmp.quantity += quantity;
-        BaseFileSystem::erase(pos);
-        BaseFileSystem::insert(pos, tmp);
-        return 1;
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return 0;
-    }
+    if (!pos)
+        throw InvalidException("Import a book before select it");
+    CustomBook tmp = BaseFileSystem::find(pos);
+    tmp.quantity += quantity;
+    BaseFileSystem::erase(pos);
+    BaseFileSystem::insert(pos, tmp);
+    return 1;
 }
 
 double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
@@ -137,17 +158,29 @@ double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
         BaseFileSystem::erase(pos);
         BaseFileSystem::insert(pos, tmp);
         return tmp.price;
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return -1.0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return -1;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
 CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
     try {
         int pos = isbn_table.find(isbn);
-        return BaseFileSystem::find(pos);
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return CustomBook();
+        CustomBook ret = BaseFileSystem::find(pos);
+        ret.pos = pos;
+        return ret;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return CustomBook();
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -211,23 +244,24 @@ BookSystem::~BookSystem() {
     int len = total_earn.size();
     fout << book_table.siz << ' ' << len << '\n';
     for (int i = 0; i < len; i++)
-        fout << std::setprecision(20) << total_earn[i] << ' ' << total_cost[i] << '\n';
+        fout << std::setprecision(20) << total_earn[i] << ' ' << total_cost[i]
+             << '\n';
 }
 
-void BookSystem::SelectBook(const char *isbn) {
+int BookSystem::SelectBook(const char *isbn) {
     CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
     if (tmp.empty()) {
         tmp.isbn = isbn;
-        book_table.insert(IsbnStr(isbn), tmp);
-    }
-    return;
+        return book_table.insert(IsbnStr(isbn), tmp);
+    } else
+        return tmp.pos;
 }
-void BookSystem::ModifyBook(const char *isbn, const char *_isbn,
+void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,
                             const char *_key, const double _price) {
-    if (!strcmp(isbn, ""))
+    if (!book_pos)
         throw InvalidException("Modify a book before selecting it");
-    if (!book_table.edit(IsbnStr(isbn),
+    if (!book_table.edit(book_pos,
                          CustomBook(_isbn, _name, _author, _key, _price)))
         throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
 }
@@ -305,9 +339,10 @@ void BookSystem::BuyBook(const char *isbn, const int quantity) {
     total_cost.push_back(total_cost.back());
 }
 
-void BookSystem::ImportBook(const char *isbn, const int quantity,
+void BookSystem::ImportBook(const int book_pos, const int quantity,
                             const double cost) {
-    if (!book_table.inc_quantity(IsbnStr(isbn), quantity, cost))
+
+    if (!book_table.inc_quantity(book_pos, quantity, cost))
         throw InvalidException("Not found the book to import");
     total_earn.push_back(total_earn.back());
     total_cost.push_back(total_cost.back() + cost);

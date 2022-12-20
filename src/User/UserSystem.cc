@@ -23,8 +23,13 @@ bool UserFileSystem::insert(const UserStr &uid, const BookstoreUser &data) {
         siz++;
         BaseFileSystem::insert(siz, data);
         return 1;
-    } catch (NormalException(ULL_INSERTED)) {
-        return 0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_INSERTED)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -33,8 +38,13 @@ bool UserFileSystem::erase(const UserStr &uid) {
         int pos = uid_table.erase(uid);
         BaseFileSystem::erase(pos);
         return 1;
-    } catch (NormalException(ULL_ERASE_NOT_FOUND)) {
-        return 0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_ERASE_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -43,8 +53,13 @@ bool UserFileSystem::edit(const UserStr &uid, const BookstoreUser &data) {
         int pos = uid_table.find(uid);
         BaseFileSystem::insert(pos, data);
         return 1;
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return 0;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
@@ -52,16 +67,20 @@ BookstoreUser UserFileSystem::find(const UserStr &uid) {
     try {
         int pos = uid_table.find(uid);
         return BaseFileSystem::find(pos);
-    } catch (NormalException(ULL_NOT_FOUND)) {
-        return BookstoreUser();
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return BookstoreUser();
+        else {
+            x.error();
+            exit(-1);
+        }
     }
 }
 
 void UserFileSystem::output() {
     for (int i = 1; i <= siz; i++) {
         BookstoreUser user = BaseFileSystem::find(i);
-        printf("ID=%s Name=%s Pswd=%s Iden=%d\n", user.id.str, user.name.str,
-               user.pswd.str, user.iden);
+        std::cout << "ID=" << user.id.str << " Name=" << user.name.str << " Passwd=" << user.pswd.str << " Iden=" << user.iden << '\n';
     }
 }
 
@@ -71,7 +90,7 @@ UserSystem::UserSystem() {
         fin >> user_table.siz;
     user_table.insert(UserRoot.id, UserRoot);
     user_table.insert(UserGuest.id, UserGuest);
-    user_stack.push(std::make_pair(UserGuest, ""));
+    user_stack.push(std::make_pair(UserGuest, 0));
 }
 
 UserSystem::~UserSystem() {
@@ -94,7 +113,7 @@ void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
         throw UnknownException(UNKNOWN, "Not found such data");
     if ((cur.iden > tmp.iden && !strcmp(user_pswd, "")) ||
         user_pswd == tmp.pswd)
-        user_stack.push(std::make_pair(tmp, ""));
+        user_stack.push(std::make_pair(tmp, 0));
     else
         throw InvalidException("Wrong password!");
 }
@@ -138,22 +157,22 @@ void UserSystem::UserErase(const char *user_id) {
     user_table.erase(UserStr(user_id));
 }
 
-void UserSystem::SelectBook(const char *isbn) {
-    user_stack.top().second = std::string(isbn);
+void UserSystem::SelectBook(const int book_pos) {
+    user_stack.top().second = book_pos;
 }
 
 int UserSystem::GetIdentity() const { return user_stack.top().first.iden; }
 
-std::string UserSystem::GetBook() const {
+int UserSystem::GetBook() const {
     if (user_stack.top().first == UserGuest)
-        return "";
+        return 0;
     return user_stack.top().second;
 }
 
 void UserSystem::output() {
-    printf("User data:\n");
+    std::cout << "User data:\n";
     user_table.output();
-    printf("\n");
+    std::cout << '\n';
 }
 
 } // namespace user

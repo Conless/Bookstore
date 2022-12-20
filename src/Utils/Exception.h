@@ -1,6 +1,7 @@
 #ifndef BOOKSTORE_EXCEPTION_H
 #define BOOKSTORE_EXCEPTION_H
 
+#include <iostream>
 #include <string>
 
 enum ExceptionType {
@@ -20,7 +21,12 @@ class BaseException {
   public:
     BaseException(ExceptionType _opt, const std::string &_msg)
         : opt(_opt), msg(_msg) {}
-    std::string what() const { return msg; }
+    ExceptionType what() const { return opt; }
+    std::string details() const { return msg; }
+    void error() const {
+        std::cerr << "Program exited unexpectedly after throwing an error "
+                  << msg << '\n';
+    }
 
   private:
     ExceptionType opt;
