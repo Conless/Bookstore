@@ -104,7 +104,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     }
     if (msg.func == BUY) {
         std::pair<int, bool> quan = str_to_int(msg.args[1]);
-        if (!quan.second)
+        if (!quan.first || !quan.second)
             throw InvalidException("Buy: Number error");
         BookSystem::BuyBook(msg.args[0].c_str(), quan.first);
         return;

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(Bookstore)
 
-set(CMAKE_CXX_FLAGS "-g -std=c++17")
+set(CMAKE_CXX_FLAGS "-O2 -std=c++17")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS true)
 
@@ -10,7 +10,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Main sources
 include_directories(${PROJECT_SOURCE_DIR}/src)
-add_subdirectory(src)
+# add_subdirectory(src)
 
 # Test
 # add_subdirectory(test)
