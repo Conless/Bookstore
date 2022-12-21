@@ -25,7 +25,7 @@ class CustomBook {
   public:
     CustomBook();
     explicit CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
-    explicit CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line, const double _price);
+    explicit CustomBook(const char *_isbn, const char *_name, const char *_author, const std::vector<char*> &_keyword, const int _keyword_cnt, const double _price);
 
     void PrintInfo() const;
     bool operator<(const CustomBook &x) const { return isbn < x.isbn; }
@@ -73,7 +73,7 @@ class BookSystem {
     ~BookSystem();
 
     int SelectBook(const char *isbn);
-    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
+    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const std::vector<char *> &_key, const int _key_cnt, const double _price);
 
     void SearchAll();
     void SearchByISBN(const char *isbn);

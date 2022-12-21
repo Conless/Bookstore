@@ -2,9 +2,8 @@
 
 #include "User/UserSystem.h"
 #include "Utils/Exception.h"
-#include <new>
+
 #include <string>
-#include <utility>
 
 namespace bookstore {
 
@@ -121,9 +120,21 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         std::pair<double, bool> price = str_to_double(msg.args[4]);
         if (!price.second)
             throw InvalidException("Modify: Number error");
+        BookstoreLexer key_div_str(msg.args[3], '|');
+        std::set<std::string> key_div_set;
+        std::vector<char *> key_div;
+        key_div.resize(key_div_str.size());
+        int siz = 0;
+        for (std::string str : key_div_str) {
+            key_div[siz] = new char[65];
+            strcpy(key_div[siz], str.c_str());
+            siz++;
+            if (!key_div_set.insert(str).second)
+                throw InvalidException("Modify: duplicated keyword");
+        }
         BookSystem::ModifyBook(book_pos, msg.args[0].c_str(),
                                msg.args[1].c_str(), msg.args[2].c_str(),
-                               msg.args[3].c_str(), price.first);
+                               key_div, siz, price.first);
         return;
     }
     if (msg.func == IMPORT) {

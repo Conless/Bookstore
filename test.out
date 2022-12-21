@@ -1,4 +1,378 @@
-Invalid
-Invalid
-Invalid
-1	name1	author1	keyword1|1|2	10.00	0
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+
+Book status:
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609303				0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304				0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	DavisandSons			0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick			0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick			0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	50.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722				0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443				0.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	0
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	0
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	0
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+
+Valid
+User data:
+ID=root Name=root Passwd=sjtu Iden=7
+ID=DarkBluntness Name=BrightSharpness Passwd=BrightBluntness Iden=0
+ID=worker Name=King-Bailey Passwd=worker_password Iden=3
+ID=user Name=Griffin,RamirezandRobinson Passwd=user_password Iden=1
+
+Book status:
+9787559609304	Thompson-Patrick	Weaver-Moreno	Stephens-Moore|WilkinsLLC	49.80	10
+9787544287722	McclainLLC	Atkins-Summers	RogersGroup|OconnorandSons	45.00	15
+9787559410443	FoxInc	Anderson-Yang	RogersGroup|Irwin-Atkinson	38.00	5
+

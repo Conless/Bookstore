@@ -17,17 +17,11 @@ CustomBook::CustomBook()
     : isbn(), name(), author(), keyword_cnt(0), quantity(0), price(0.0) {}
 
 CustomBook::CustomBook(const char *_isbn, const char *_name,
-                       const char *_author, const char *_keyword_in_line,
-                       const double _price)
-    : isbn(_isbn), name(_name), author(_author), price(_price) {
-    input::BookstoreLexer ret(std::string(_keyword_in_line), '|');
-    for (int i = 0; i < ret.size(); i++)
-        keyword[i] = ret[i].c_str();
-    keyword_cnt = ret.size();
-    std::sort(ret.begin(), ret.end());
-    for (int i = 1; i < ret.size(); i++)
-        if (ret[i] == ret[i - 1])
-            throw InvalidException("Duplicated keyword!");
+                       const char *_author, const std::vector<char *> &_keyword,
+                       const int _keyword_cnt, const double _price)
+    : isbn(_isbn), name(_name), author(_author), keyword_cnt(_keyword_cnt), price(_price) {
+    for (int i = 0; i < keyword_cnt; i++)
+        keyword[i] = _keyword[i];
 }
 
 void CustomBook::PrintInfo() const {
@@ -262,11 +256,11 @@ int BookSystem::SelectBook(const char *isbn) {
 }
 void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,
-                            const char *_key, const double _price) {
+                            const std::vector<char *> &_key, const int _key_cnt, const double _price) {
     if (!book_pos)
         throw InvalidException("Modify a book before selecting it");
     if (!book_table.edit(book_pos,
-                         CustomBook(_isbn, _name, _author, _key, _price)))
+                         CustomBook(_isbn, _name, _author, _key, _key_cnt, _price)))
         throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
 }
 

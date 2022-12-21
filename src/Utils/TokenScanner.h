@@ -35,6 +35,7 @@ class BookstoreLexer : public std::vector<std::string> {
   public:
     BookstoreLexer() {}
     BookstoreLexer(const std::string &str_in_line, char divide_opt = ' ');
+    const char ** c_str();
 };
 
 class BookstoreParser {

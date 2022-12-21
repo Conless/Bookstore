@@ -6,6 +6,395 @@ cause a mess of the source version, you are NOT allowed to:
     - debug this file except in case of necessity
     - commit the changes of this file to git
 */
+#ifndef BOOKSTORE_EXCEPTION_H
+#define BOOKSTORE_EXCEPTION_H
+
+#include <iostream>
+#include <string>
+
+enum ExceptionType {
+    STD_INVALID,
+    INPUT,
+    NORMAL,
+    UNIMPLEMENTED,
+    UNKNOWN,
+    QUIT_SYSTEM,
+    ULL_ERASE_NOT_FOUND,
+    ULL_INSERTED,
+    ULL_NOT_FOUND,
+    ULL_DUPLICATED
+};
+
+class BaseException {
+  public:
+    BaseException(ExceptionType _opt, const std::string &_msg)
+        : opt(_opt), msg(_msg) {}
+    ExceptionType what() const { return opt; }
+    std::string details() const { return msg; }
+    void error() const {
+        std::cerr << "Program exited unexpectedly after throwing an error "
+                  << msg << '\n';
+    }
+
+  private:
+    ExceptionType opt;
+    std::string msg;
+};
+
+class NormalException : public BaseException {
+  public:
+    NormalException(const ExceptionType &_opt) : BaseException(_opt, "") {}
+};
+
+class InvalidException : public BaseException {
+  public:
+    InvalidException(const std::string &_msg)
+        : BaseException(STD_INVALID, _msg) {}
+};
+class UnknownException : public BaseException {
+  public:
+    UnknownException(const ExceptionType &_opt, const std::string &_msg)
+        : BaseException(_opt, _msg) {}
+};
+
+#endif
+#ifndef BOOKSTORE_TOKENSCANNER_H
+#define BOOKSTORE_TOKENSCANNER_H
+
+#include <string>
+#include <vector>
+
+namespace bookstore {
+
+namespace input {
+
+enum Function {
+    QUIT,
+    SU,
+    LOGOUT,
+    REG,
+    PASSWD,
+    USERADD,
+    DEL,
+    SHOW_ALL,
+    SHOW_ISBN,
+    SHOW_NAME,
+    SHOW_AUTHOR,
+    SHOW_KEYWORD,
+    BUY,
+    SEL,
+    MODIFY,
+    IMPORT,
+    FINANCE,
+    LOG
+};
+
+int to_authentity(const Function &func);
+
+class BookstoreLexer : public std::vector<std::string> {
+  public:
+    BookstoreLexer() {}
+    BookstoreLexer(const std::string &str_in_line, char divide_opt = ' ');
+};
+
+class BookstoreParser {
+  public:
+    Function func;
+    BookstoreLexer args;
+    BookstoreParser(Function func, BookstoreLexer args) : func(func), args(args) {}
+
+  public:
+    BookstoreParser(const BookstoreLexer &input);
+};
+
+} // namespace input
+
+} // namespace bookstore
+
+#endif
+
+
+namespace bookstore {
+
+namespace input {
+
+int to_authentity(const Function &func) {
+    if (func == QUIT || func == SU || func == REG)
+        return 0;
+    if (func == LOGOUT || func == PASSWD || func == SHOW_ALL ||
+        func == SHOW_ISBN || func == SHOW_NAME || func == SHOW_AUTHOR ||
+        func == SHOW_KEYWORD || func == BUY)
+        return 1;
+    if (func == USERADD || func == SEL || func == MODIFY || func == IMPORT)
+        return 3;
+    return 7;
+}
+
+BookstoreLexer::BookstoreLexer(const std::string &str_in_line,
+                               char divide_opt) {
+    int siz = str_in_line.size();
+    int las = 0;
+    for (int i = 0; i < siz; i++)
+        if (str_in_line[i] == divide_opt) {
+            push_back(str_in_line.substr(las, i - las));
+            las = i + 1;
+        } else if (i == siz - 1) {
+            push_back(str_in_line.substr(las, i - las + 1));
+        }
+}
+
+BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
+    if (!input.size())
+        throw UnknownException(INPUT, "Read an empty input line.");
+    BookstoreLexer input_str;
+    if (input[0] == "exit" || input[0] == "quit") {
+        if (input.size() != 1)
+            throw UnknownException(
+                INPUT,
+                "Exit or quit message followed with unexpected parameters.");
+        *this = BookstoreParser(QUIT, input_str);
+        return;
+    }
+    if (input[0] == "su") {
+        if (input.size() == 2) {
+            input_str.push_back(input[1]);
+            input_str.push_back("");
+            *this = BookstoreParser(SU, input_str);
+        } else if (input.size() == 3) {
+            input_str.push_back(input[1]);
+            input_str.push_back(input[2]);
+            *this = BookstoreParser(SU, input_str);
+        } else
+            throw UnknownException(
+                INPUT, "Su message followed with unexpected parameters.");
+        return;
+    }
+    if (input[0] == "logout") {
+        if (input.size() != 1)
+            throw UnknownException(
+                INPUT, "Logout message followed with unexpected parameters.");
+        *this = BookstoreParser(LOGOUT, BookstoreLexer());
+        return;
+    }
+    if (input[0] == "register") {
+        if (input.size() != 4)
+            throw UnknownException(
+                INPUT, "Register message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        input_str.push_back(input[2]);
+        input_str.push_back(input[3]);
+        *this = BookstoreParser(REG, input_str);
+        return;
+    }
+    if (input[0] == "passwd") {
+        if (input.size() == 3) {
+            input_str.push_back(input[1]);
+            input_str.push_back("");
+            input_str.push_back(input[2]);
+            *this = BookstoreParser(PASSWD, input_str);
+            return;
+        }
+        if (input.size() == 4) {
+            input_str.push_back(input[1]);
+            input_str.push_back(input[2]);
+            input_str.push_back(input[3]);
+            *this = BookstoreParser(PASSWD, input_str);
+            return;
+        }
+        throw UnknownException(
+            INPUT, "Passwd message followed with unexpected parameters.");
+    }
+    if (input[0] == "useradd") {
+        if (input.size() != 5)
+            throw UnknownException(
+                INPUT, "Useradd message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        input_str.push_back(input[2]);
+        input_str.push_back(input[3]);
+        input_str.push_back(input[4]);
+        *this = BookstoreParser(USERADD, input_str);
+        return;
+    }
+    if (input[0] == "delete") {
+        if (input.size() != 2)
+            throw UnknownException(
+                INPUT, "Delete message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        *this = BookstoreParser(DEL, input_str);
+        return;
+    }
+    if (input[0] == "show") {
+        if (input.size() == 1) {
+            *this = BookstoreParser(SHOW_ALL, input_str);
+        } else if (input[1] == "finance") {
+            if (input.size() == 2)
+                ;
+            else if (input.size() == 3)
+                input_str.push_back(input[2]);
+            else
+                throw UnknownException(INPUT, "Show Finance message followed "
+                                              "with unexpected parameters.");
+            *this = BookstoreParser(FINANCE, input_str);
+
+        } else {
+            BookstoreLexer input_div(input[1], '=');
+            if (input_div.size() != 2)
+                throw UnknownException(
+                    INPUT, "Show message followed with unexpected parameters.");
+            input_str.push_back(input_div[1]);
+            if (input_div[0] == "-ISBN")
+                *this = BookstoreParser(SHOW_ISBN, input_str);
+            else {
+                input_str[0] = input_div[1].substr(1, input_div[1].size() - 2);
+                if (input_div[0] == "-name")
+                    *this = BookstoreParser(SHOW_NAME, input_str);
+                else if (input_div[0] == "-author")
+                    *this = BookstoreParser(SHOW_AUTHOR, input_str);
+                else if (input_div[0] == "-keyword")
+                    *this = BookstoreParser(SHOW_KEYWORD, input_str);
+                else
+                    throw UnknownException(
+                        INPUT,
+                        "Show message followed with unexpected parameters.");
+            }
+        }
+        return;
+    }
+    if (input[0] == "buy") {
+        if (input.size() != 3)
+            throw UnknownException(
+                INPUT, "Buy message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        input_str.push_back(input[2]);
+        *this = BookstoreParser(BUY, input_str);
+        return;
+    }
+    if (input[0] == "select") {
+        if (input.size() != 2)
+            throw UnknownException(
+                INPUT, "Select message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        *this = BookstoreParser(SEL, input_str);
+        return;
+    }
+    if (input[0] == "modify") {
+        if (input.size() < 2)
+            throw InvalidException("Modify with no parameters");
+        int siz = input.size();
+        input_str.resize(5);
+        input_str[0] = input_str[1] = input_str[2] = input_str[3] =
+            input_str[4] = "";
+        for (int i = 1; i < siz; i++) {
+            BookstoreLexer input_div(input[i], '=');
+            if (input_div.size() != 2)
+                throw UnknownException(
+                    INPUT,
+                    "Modify message followed with unexpected parameters.");
+            int opt;
+            if (input_div[0] == "-ISBN")
+                opt = 0;
+            else if (input_div[0] == "-name")
+                opt = 1;
+            else if (input_div[0] == "-author")
+                opt = 2;
+            else if (input_div[0] == "-keyword")
+                opt = 3;
+            else if (input_div[0] == "-price")
+                opt = 4;
+            else
+                throw UnknownException(
+                    INPUT,
+                    "Modify message followed with unexpected parameters.");
+            if (input_str[opt] != "")
+                throw InvalidException("Repeated modify parameters");
+            if (opt == 0 || opt == 4)
+                input_str[opt] = input_div[1];
+            else
+                input_str[opt] =
+                    input_div[1].substr(1, input_div[1].size() - 2);
+        }
+        *this = BookstoreParser(MODIFY, input_str);
+        return;
+    }
+    if (input[0] == "import") {
+        if (input.size() != 3)
+            throw UnknownException(
+                INPUT, "Import message followed with unexpected parameters.");
+        input_str.push_back(input[1]);
+        input_str.push_back(input[2]);
+        *this = BookstoreParser(IMPORT, input_str);
+        return;
+    }
+    throw InvalidException("Sorry, bookstore doesn't support this operation.");
+}
+
+} // namespace input
+
+} // namespace bookstore
+#ifndef BOOKSTORE_FILESYSTEM_H
+#define BOOKSTORE_FILESYSTEM_H
+
+#include <filesystem>
+#include <fstream>
+#include <ostream>
+#include <set>
+#include <string>
+
+namespace bookstore {
+
+namespace file {
+
+template <class DataType> class BaseFileSystem {
+  public:
+    explicit BaseFileSystem(const std::string _file_name)
+        : file_name(_file_name) {
+        std::filesystem::create_directories("data");
+        std::ifstream checker("data/" + file_name + ".dat");
+        if (!checker.good())
+            std::ofstream creater("data/" + file_name + ".dat");
+        checker.close();
+        file.open("data/" + file_name + ".dat");
+    }
+    virtual ~BaseFileSystem() = default;
+    void insert(int pos, const DataType &data) {
+        file.seekp(sizeof(DataType) * (pos - 1));
+        file.write(reinterpret_cast<const char *>(&data), sizeof(DataType));
+    }
+    void erase(int pos) {
+        DataType tmp = DataType();
+        file.seekp(sizeof(DataType) * (pos - 1));
+        file.write(reinterpret_cast<char *>(&tmp), sizeof(DataType));
+    }
+    DataType find(int pos) {
+        DataType ret;
+        file.seekg(sizeof(DataType) * (pos - 1));
+        file.read(reinterpret_cast<char *>(&ret), sizeof(DataType));
+        return ret;
+    }
+    std::set<DataType> search() {
+        std::set<DataType> ret;
+        ret.clear();
+        file.seekg(0);
+        while (!file.eof()) {
+            DataType tmp;
+            file.read(reinterpret_cast<char *>(&tmp), sizeof(DataType));
+            if (!tmp.empty())
+                ret.insert(tmp);
+        }
+        file.clear();
+        return ret;
+    }
+
+  private:
+    std::fstream file;
+    std::string file_name;
+};
+
+} // namespace file
+
+} // namespace bookstore
+
+#endif
 /**
  * @file UnrolledLinkedList.h
  * @author Conless Pan (conlesspan@outlook.com)
@@ -20,16 +409,15 @@ cause a mess of the source version, you are NOT allowed to:
 #ifndef BOOKSTORE_LIST_ULL_H
 #define BOOKSTORE_LIST_ULL_H
 
+#include <cstring>
 #include <fstream>
 #include <set>
 #include <string>
-#include <cstring>
 #include <vector>
 
 namespace bookstore {
 
 namespace list {
-
 
 /**
  * @brief Class KeyType
@@ -39,16 +427,28 @@ namespace list {
 template <size_t kMaxKeyLen> class KeyType {
   public:
     KeyType() { memset(str, 0, sizeof(str)); }
-    KeyType(const char *_str) {
-        memset(str, 0, sizeof(str)), strcpy(str, _str);
+    explicit KeyType(const char *_str) {
+        memset(str, 0, sizeof(str));
+        strcpy(str, _str);
+    }
+    KeyType operator=(const char *_str) {
+        memset(str, 0, sizeof(str));
+        strcpy(str, _str);
+        return *this;
     }
     KeyType(const KeyType &x) {
         memset(str, 0, sizeof(str)), strcpy(str, x.str);
     }
 
+    bool empty() const { return strcmp(str, "") == 0; }
     bool operator<(const KeyType &x) const { return strcmp(str, x.str) < 0; }
+    bool operator<(const char *x) const { return strcmp(str, x) < 0; }
     bool operator>(const KeyType &x) const { return strcmp(str, x.str) > 0; }
     bool operator==(const KeyType &x) const { return strcmp(str, x.str) == 0; }
+    bool operator==(const char *x) const { return strcmp(str, x) == 0; }
+    friend bool operator==(const char *x, const KeyType &y) {
+        return strcmp(y.str, x) == 0;
+    }
     bool operator!=(const KeyType &x) const { return !(*this == x); }
     bool operator<=(const KeyType &x) const { return !(*this > x); }
     bool operator>=(const KeyType &x) const { return !(*this < x); }
@@ -118,7 +518,13 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     // Judge whether the ull is empty
     bool empty() const;
 
-    // Insert
+    // Operations
+    void insert(const char *key, const int value) { insert
+    (KeyType<kMaxKeyLen>(key), value); }
+    void erase(const char *key, const int value) { erase(KeyType<kMaxKeyLen>(key), value); }
+    std::vector<int> find(const char *key) { return find(KeyType<kMaxKeyLen>(key)); }
+
+    // Operations of custom string
     void insert(const KeyType<kMaxKeyLen> &key, const int value);
     int erase(const KeyType<kMaxKeyLen> &key, const int value);
     std::vector<int> find(const KeyType<kMaxKeyLen> &key);
@@ -144,7 +550,8 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     // Deallocate a block
     void deallocate(ListBlock<kMaxKeyLen> &cur);
 
-    virtual bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp);
+    virtual bool is_same(const DataType<kMaxKeyLen> &data,
+                         const DataType<kMaxKeyLen> &tmp);
 
     // Insert a data to a block
     void insert(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
@@ -153,7 +560,8 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     int erase(ListBlock<kMaxKeyLen> &cur, const DataType<kMaxKeyLen> &tmp);
 
     // Find some data in the block
-    std::vector<int> find(ListBlock<kMaxKeyLen> &cur, const KeyType<kMaxKeyLen> &key);
+    std::vector<int> find(ListBlock<kMaxKeyLen> &cur,
+                          const KeyType<kMaxKeyLen> &key);
 
     // Split a block
     ListBlock<kMaxKeyLen> split(ListBlock<kMaxKeyLen> &cur);
@@ -179,12 +587,19 @@ class UnrolledLinkedListUnique : public UnrolledLinkedList<kMaxKeyLen> {
   public:
     UnrolledLinkedListUnique(const std::string _file_name)
         : UnrolledLinkedList<kMaxKeyLen>(_file_name) {}
-    int erase(const char *key);
-    int find(const char *key);
+    int erase(const KeyType<kMaxKeyLen> &key);
+    int find(const KeyType<kMaxKeyLen> &key);
 
   protected:
-    bool is_same(const DataType<kMaxKeyLen> &data, const DataType<kMaxKeyLen> &tmp) override;
+    bool is_same(const DataType<kMaxKeyLen> &data,
+                 const DataType<kMaxKeyLen> &tmp) override;
 };
+
+template class UnrolledLinkedList<25>;
+template class UnrolledLinkedList<35>;
+template class UnrolledLinkedList<65>;
+template class UnrolledLinkedListUnique<25>;
+template class UnrolledLinkedListUnique<35>;
 
 } // namespace list
 
@@ -202,7 +617,7 @@ class UnrolledLinkedListUnique : public UnrolledLinkedList<kMaxKeyLen> {
  *
  */
 
-
+ 
 #include <algorithm>
 #include <cstring>
 #include <filesystem>
@@ -248,7 +663,7 @@ UnrolledLinkedList<kMaxKeyLen>::UnrolledLinkedList(
             free_blocks.erase(_pos);
         }
     } else { // Create a new data file
-        std::ofstream tmp(dat_file, std::ios::out | std::ios::trunc);
+        std::ofstream tmp(dat_file, std::ios::out);
         tmp.close();
         file.open(dat_file);
     }
@@ -264,7 +679,7 @@ UnrolledLinkedList<kMaxKeyLen>::~UnrolledLinkedList() {
     std::string log_file = "data/" + file_name + ".log";
     std::ofstream OutputLog(
         log_file,
-        std::ios::out | std::ios::trunc); // Write the log into file system
+        std::ios::out); // Write the log into file system
     int len = blocks.size() - 1;
     OutputLog << len << '\n';
     for (int i = 1; i <= len; i++)
@@ -326,7 +741,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key,
     DataType tmp(key, value);
     int len = blocks.size() - 1, val;
     if (!len)
-        return -1;
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     int pos = 0;
     for (int i = 1; i <= len; i++) {
         if (tmp <= blocks[i].tail) { // Found the block to erase from
@@ -336,7 +751,7 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key,
         }
     }
     if (!pos) // Not found given data
-        return -1;
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     if (!blocks[pos].len) { // The block becomes empty
         free_blocks.insert(blocks[pos].pos);
         blocks.erase(blocks.begin() + pos);
@@ -453,7 +868,7 @@ void UnrolledLinkedList<kMaxKeyLen>::insert(ListBlock<kMaxKeyLen> &cur,
         (pos &&
          is_same(cur.data[pos - 1], tmp))) { // the data has been inserted
         deallocate(cur);
-        return;
+        throw NormalException(ULL_INSERTED);
     }
     if (!pos) // update the info of head and tail
         cur.head = tmp;
@@ -480,10 +895,10 @@ int UnrolledLinkedList<kMaxKeyLen>::erase(ListBlock<kMaxKeyLen> &cur,
                                           const DataType<kMaxKeyLen> &tmp) {
     allocate(cur); // allocate the current block
     int pos = std::lower_bound(cur.data, cur.data + cur.len, tmp) - cur.data;
-    int value = tmp.value;
+    int value = cur.data[pos].value;
     if (!is_same(cur.data[pos], tmp)) {
         deallocate(cur);
-        return -1;
+        throw NormalException(ULL_ERASE_NOT_FOUND);
     }
     if (!pos && cur.len != 1) // update the info of head and tail
         cur.head = cur.data[pos + 1];
@@ -590,16 +1005,16 @@ void UnrolledLinkedList<kMaxKeyLen>::merge(ListBlock<kMaxKeyLen> &cur, ListBlock
     free_blocks.insert(del.pos); // free the block
 }
 template <size_t kMaxKeyLen>
-int UnrolledLinkedListUnique<kMaxKeyLen>::erase(const char *key) {
+int UnrolledLinkedListUnique<kMaxKeyLen>::erase(const KeyType<kMaxKeyLen> &key) {
     return UnrolledLinkedList<kMaxKeyLen>::erase(key, 0);
 }
 template <size_t kMaxKeyLen>
-int UnrolledLinkedListUnique<kMaxKeyLen>::find(const char *key) {
+int UnrolledLinkedListUnique<kMaxKeyLen>::find(const KeyType<kMaxKeyLen> &key) {
     std::vector<int> ret = UnrolledLinkedList<kMaxKeyLen>::find(key);
     if (ret.empty())
-        return -1;
+        throw NormalException(ULL_NOT_FOUND);
     if (ret.size() >= 2)
-        return -1;
+        throw NormalException(ULL_DUPLICATED);
     return ret[0];
 }
 template <size_t kMaxKeyLen>
@@ -611,102 +1026,982 @@ bool UnrolledLinkedListUnique<kMaxKeyLen>::is_same(
 
 } // namespace list
 } // namespace bookstore
+#ifndef BOOKSTORE_USERSYSTEM_H
+#define BOOKSTORE_USERSYSTEM_H
 
-#include <bits/stdc++.h>
-#include <memory>
+#include <stack>
+#include <string>
 
-using namespace std;
 
 namespace bookstore {
 
-namespace list {
+namespace user {
 
-class ULLTst : public UnrolledLinkedList<70> {
-  public:
-    ULLTst(const char *file_name) : UnrolledLinkedList(file_name) {}
-    void test1() {
-        // ListBlock a(1, 1), b(1, 2);
-        // a.data = new DataType[1];
-        // strcpy(a.data[0].key.str, "a");
-        // deallocate(a);
-        // b.data = new DataType[1];
-        // b.len = 1;
-        // strcpy(b.data[0].key.str, "b");
-        // deallocate(b);
-        // merge(a, b);
-        // allocate(a);
-        // puts(a.data[0].key.str);
-        // output(a);
-    }
+const int kMaxUserLen = 35;
 
-    void test2() {
-        // char str[kMaxKeyLen];
-        // int data;
-        // ListBlock a;
-        // int T;
-        // std::cin >> T;
-        // a.read(file);
-        // while (T--) {
-        //     int opt;
-        //     std::cin >> opt;
-        //     if (opt == 0) {
-        //         std::cin >> str >> data;
-        //         DataType tmp(str, data);
-        //         a.insert(tmp);
-        //     } else if (opt == 1) {
-        //         std::cin >> str >> data;
-        //         DataType tmp(str, data);
-        //         a.erase(tmp);
-        //     } else {
-        //         a.output();
-        //     }
-        // }
-    }
+using UserStr = list::KeyType<kMaxUserLen>;
+using map = list::UnrolledLinkedListUnique<kMaxUserLen>;
 
-    void test3() {
-        char str[70];
-        int data;
-        int T;
-        cin >> T;
-        while (T--) {
-            string opt;
-            std::cin >> opt;
-            try {
-                if (opt == "insert") {
-                    std::cin >> str >> data;
-                    insert(str, data);
-                } else if (opt == "delete") {
-                    std::cin >> str >> data;
-                    erase(str, data);
-                } else if (opt == "find") {
-                    std::cin >> str;
-                    auto ret = find(str);
-                    if (ret.size() == 0)
-                        std::cout << "null\n";
-                    else {
-                        for (auto x : ret)
-                            std::cout << x << ' ';
-                        std::cout << '\n';
-                    }
-                }
-                // std::cout << "Status:\n";
-                // for (int i = 1; i <= blocks.size() - 1; i++) {
-                //     std::cout << "Block " << i << ":\n";
-                //     output(blocks[i]);
-                // }
-                // std::cout << '\n';
-            } catch (...) {
-            }
-        }
-    }
+enum Identity {
+    Manager = 7,
+    Staff = 3,
+    Customer = 1,
+    Guest = 0
 };
 
-} // namespace list
+class BookstoreUser {
+  public:
+    BookstoreUser() : id(), name(), pswd(), iden(Guest) {}
+    BookstoreUser(const BookstoreUser &_user)
+        : id(_user.id), name(_user.name), pswd(_user.pswd), iden(_user.iden) {}
+    BookstoreUser(const UserStr &_user_id, const UserStr &_user_name,
+                  const UserStr &_user_pswd, const Identity _user_iden)
+        : id(_user_id), name(_user_name), pswd(_user_pswd), iden(_user_iden) {}
+    BookstoreUser(const char *_user_id, const char *_user_name,
+                  const char *_user_pswd, const int _user_iden)
+        : id(_user_id), name(_user_name), pswd(_user_pswd),
+          iden(Identity(_user_iden)) {}
+    bool empty() { return id == ""; }
+    bool operator==(const BookstoreUser &x) const { return id == x.id; }
+
+  public:
+    UserStr id, name, pswd;
+    Identity iden;
+};
+
+class UserFileSystem : public file::BaseFileSystem<BookstoreUser> {
+  public:
+    UserFileSystem();
+    ~UserFileSystem() = default;
+    bool insert(const UserStr &uid, const BookstoreUser &data);
+    bool erase(const UserStr &uid);
+    bool edit(const UserStr &uid, const BookstoreUser &data);
+    BookstoreUser find(const UserStr &uid);
+
+  public:
+    void output();
+    int siz;
+
+  private:
+    map uid_table;
+};
+
+class UserSystem {
+  protected:
+    UserSystem();
+    ~UserSystem();
+
+    void UserRegister(const char *user_id, const char *user_name,
+                      const char *user_pswd);
+    void UserLogin(const char *user_id, const char *user_pswd);
+    void UserLogout();
+    void ModifyPassword(const char *user_id, const char *cur_pswd,
+                        const char *new_pswd);
+    void UserAdd(const char *user_id, const char *user_name,
+                 const char *user_pswd, const int user_iden);
+    void UserErase(const char *user_id);
+    void SelectBook(const int book_pos);
+    int GetBook() const;
+    int GetIdentity() const;
+
+  protected:
+    void output();
+
+  private:
+    std::stack<std::pair<BookstoreUser, int>> user_stack;
+    UserFileSystem user_table;
+};
+
+} // namespace user
 
 } // namespace bookstore
 
-int main() {
-    bookstore::list::ULLTst a("test");
-    a.test3();
+#endif
+
+#include <cstring>
+#include <fstream>
+#include <utility>
+
+namespace bookstore {
+
+namespace user {
+
+const BookstoreUser UserRoot = {"root", "root", "sjtu", 7};
+const BookstoreUser UserGuest = {"DarkBluntness", "BrightSharpness",
+                                 "BrightBluntness", 0};
+
+UserFileSystem::UserFileSystem()
+    : BaseFileSystem("user"), uid_table("uid"), siz(0) {
+}
+
+bool UserFileSystem::insert(const UserStr &uid, const BookstoreUser &data) {
+    try {
+        uid_table.insert(uid, siz + 1);
+        siz++;
+        BaseFileSystem::insert(siz, data);
+        return 1;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_INSERTED)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+bool UserFileSystem::erase(const UserStr &uid) {
+    try {
+        int pos = uid_table.erase(uid);
+        BaseFileSystem::erase(pos);
+        return 1;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_ERASE_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+bool UserFileSystem::edit(const UserStr &uid, const BookstoreUser &data) {
+    try {
+        int pos = uid_table.find(uid);
+        BaseFileSystem::insert(pos, data);
+        return 1;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+BookstoreUser UserFileSystem::find(const UserStr &uid) {
+    try {
+        int pos = uid_table.find(uid);
+        return BaseFileSystem::find(pos);
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return BookstoreUser();
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+void UserFileSystem::output() {
+    for (int i = 1; i <= siz; i++) {
+        BookstoreUser user = BaseFileSystem::find(i);
+        std::cout << "ID=" << user.id.str << " Name=" << user.name.str << " Passwd=" << user.pswd.str << " Iden=" << user.iden << '\n';
+    }
+}
+
+UserSystem::UserSystem() {
+    std::ifstream fin("./data/user.log");
+    if (fin.good())
+        fin >> user_table.siz;
+    user_table.insert(UserRoot.id, UserRoot);
+    user_table.insert(UserGuest.id, UserGuest);
+    user_stack.push(std::make_pair(UserGuest, 0));
+}
+
+UserSystem::~UserSystem() {
+    std::ofstream fout("./data/user.log", std::ios::out | std::ios::trunc);
+    fout << user_table.siz;
+}
+
+void UserSystem::UserRegister(const char *user_id, const char *user_name,
+                              const char *user_pswd) {
+    BookstoreUser tmp(user_id, user_name, user_pswd, 1);
+    if (!user_table.insert(UserStr(user_id), tmp))
+        throw InvalidException("The uid to be registered already exists");
+    return;
+}
+
+void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
+    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser tmp = user_table.find(UserStr(user_id));
+    if (tmp.empty())
+        throw UnknownException(UNKNOWN, "Not found such data");
+    if ((cur.iden > tmp.iden && !strcmp(user_pswd, "")) ||
+        user_pswd == tmp.pswd)
+        user_stack.push(std::make_pair(tmp, 0));
+    else
+        throw InvalidException("Wrong password!");
+}
+void UserSystem::UserLogout() {
+    BookstoreUser cur = user_stack.top().first;
+    if (cur == UserGuest)
+        throw InvalidException("You've logout all the accounts");
+    user_stack.pop();
+}
+void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
+                                const char *new_pswd) {
+    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser tmp = user_table.find(UserStr(user_id));
+    if (tmp.empty())
+        throw UnknownException(
+            UNKNOWN, "Not found such user when modifying the password.");
+    if ((cur.iden == 7 && !strcmp(cur_pswd, "")) || cur_pswd == tmp.pswd) {
+        tmp.pswd = UserStr(new_pswd);
+        user_table.edit(tmp.id, tmp);
+    } else
+        throw InvalidException("Wrong password when modifying the password.");
+}
+void UserSystem::UserAdd(const char *user_id, const char *user_name,
+                         const char *user_pswd, const int iden) {
+    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser tmp(user_id, user_name, user_pswd, iden);
+    if (cur.iden <= iden)
+        throw InvalidException(
+            "The identity should be senior when adding a user.");
+    if (!user_table.insert(UserStr(user_id), tmp))
+        throw InvalidException("The uid to be added already exists.");
+}
+void UserSystem::UserErase(const char *user_id) {
+    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser tmp = user_table.find(UserStr(user_id));
+    if (tmp.empty())
+        throw InvalidException("Not found user when erasing");
+    if (cur.iden <= tmp.iden)
+        throw InvalidException(
+            "The identity should be senior when erasing a user.");
+    user_table.erase(UserStr(user_id));
+}
+
+void UserSystem::SelectBook(const int book_pos) {
+    user_stack.top().second = book_pos;
+}
+
+int UserSystem::GetIdentity() const { return user_stack.top().first.iden; }
+
+int UserSystem::GetBook() const {
+    if (user_stack.top().first == UserGuest)
+        return 0;
+    return user_stack.top().second;
+}
+
+void UserSystem::output() {
+    std::cout << "User data:\n";
+    user_table.output();
+    std::cout << '\n';
+}
+
+} // namespace user
+} // namespace bookstore
+#ifndef BOOKSTORE_BOOKSYSTEM_H
+#define BOOKSTORE_BOOKSYSTEM_H
+
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+
+namespace bookstore {
+
+namespace book {
+
+const int kMaxISBNLen = 25;
+const int kMaxBookLen = 65;
+
+using IsbnStr = list::KeyType<kMaxISBNLen>;
+using BookStr = list::KeyType<kMaxBookLen>;
+
+using map = list::UnrolledLinkedListUnique<kMaxISBNLen>;
+using multimap = list::UnrolledLinkedList<kMaxBookLen>;
+
+class CustomBook {
+  public:
+    CustomBook();
+    explicit CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
+    explicit CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line, const double _price);
+
+    void PrintInfo() const;
+    bool operator<(const CustomBook &x) const { return isbn < x.isbn; }
+    bool empty() { return isbn == ""; }
+
+  public:
+    list::KeyType<kMaxISBNLen> isbn;
+    list::KeyType<kMaxBookLen> name, author;
+    list::KeyType<kMaxBookLen> keyword[15];
+    int keyword_cnt;
+    int quantity;
+    int pos;
+    double price;
+};
+
+class BookFileSystem : public file::BaseFileSystem<CustomBook> {
+  public:
+    BookFileSystem();
+    ~BookFileSystem() = default;
+    int insert(const IsbnStr &isbn, const CustomBook &data);
+    bool erase(const IsbnStr &isbn);
+    bool edit(const IsbnStr &isbn, CustomBook data);
+    bool edit(const int pos, CustomBook data);
+    bool inc_quantity(const int pos, const int quantity, const double cost);
+    double dec_quantity(const IsbnStr &isbn, const int quantity);
+    CustomBook FileSearchByISBN(const IsbnStr &isbn);
+    std::vector<CustomBook> FileSearchByName(const BookStr &name);
+    std::vector<CustomBook> FileSearchByAuthor(const BookStr &author);
+    std::vector<CustomBook> FileSearchByKeyword(const BookStr &keyword);
+
+  public:
+    void output();
+    int siz;
+
+  private:
+    map isbn_table;
+    multimap name_table;
+    multimap author_table;
+    multimap key_table;
+};
+
+class BookSystem {
+  protected:
+    BookSystem();
+    ~BookSystem();
+
+    int SelectBook(const char *isbn);
+    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
+
+    void SearchAll();
+    void SearchByISBN(const char *isbn);
+    void SearchByName(const char *name);
+    void SearchByAuthor(const char *author);
+    void SearchByKeyword(const char *keyword);
+
+    void BuyBook(const char *isbn, const int quantity);
+    void ImportBook(const int book_pos, const int quantity, const double cost);
+
+    void ShowFinance(const int rev = -1);
+
+  protected:
+    void output();
+    void AddBook(const char *isbn, const CustomBook &data);
+
+  private:
+    BookFileSystem book_table;
+    std::vector<double> total_earn, total_cost;
+};
+
+} // namespace book
+
+} // namespace bookstore
+
+#endif
+
+#include <algorithm>
+#include <cstring>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+
+
+namespace bookstore {
+
+namespace book {
+
+CustomBook::CustomBook()
+    : isbn(), name(), author(), keyword_cnt(0), quantity(0), price(0.0) {}
+
+CustomBook::CustomBook(const char *_isbn, const char *_name,
+                       const char *_author, const char *_keyword_in_line,
+                       const double _price)
+    : isbn(_isbn), name(_name), author(_author), price(_price) {
+    input::BookstoreLexer ret(std::string(_keyword_in_line), '|');
+    for (int i = 0; i < ret.size(); i++)
+        keyword[i] = ret[i].c_str();
+    keyword_cnt = ret.size();
+    std::sort(ret.begin(), ret.end());
+    for (int i = 1; i < ret.size(); i++)
+        if (ret[i] == ret[i - 1])
+            throw InvalidException("Duplicated keyword!");
+}
+
+void CustomBook::PrintInfo() const {
+    std::cout << isbn.str << '\t' << name.str << '\t' << author.str << '\t';
+    for (int i = 0; i < keyword_cnt; i++) {
+        if (i)
+            std::cout << '|';
+        std::cout << keyword[i].str;
+    }
+    std::cout << '\t' << price << '\t' << quantity << '\n';
+}
+
+BookFileSystem::BookFileSystem()
+    : BaseFileSystem("book"), isbn_table("isbn"), name_table("name"),
+      author_table("author"), key_table("key"), siz(0) {}
+
+int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
+    try {
+        isbn_table.insert(isbn, siz + 1);
+        siz++;
+        name_table.insert(data.name, siz);
+        author_table.insert(data.author, siz);
+        for (int i = 0; i < data.keyword_cnt; i++)
+            key_table.insert(data.keyword[i], siz);
+        BaseFileSystem::insert(siz, data);
+        return siz;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+bool BookFileSystem::erase(const IsbnStr &isbn) {
+    try {
+        int pos = isbn_table.erase(isbn);
+        CustomBook tmp = BaseFileSystem::find(pos);
+        name_table.erase(tmp.name, pos);
+        author_table.erase(tmp.author, pos);
+        for (int i = 0; i < tmp.keyword_cnt; i++)
+            key_table.erase(tmp.keyword[i], siz);
+        BaseFileSystem::erase(pos);
+        return 1;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_ERASE_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+bool BookFileSystem::edit(const IsbnStr &isbn, CustomBook data) {
+    int pos;
+    try {
+        pos = isbn_table.find(isbn);
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return 0;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+    return edit(pos, data);
+}
+
+bool BookFileSystem::edit(const int pos, CustomBook data) {
+    CustomBook tmp = BaseFileSystem::find(pos);
+    if (!data.isbn.empty()) {
+        try {
+            isbn_table.find(data.isbn);
+            return 0;
+        } catch (const NormalException &x) {
+            if (x.what() == ULL_NOT_FOUND) {
+                isbn_table.erase(tmp.isbn);
+                isbn_table.insert(data.isbn, pos);
+                tmp.isbn = data.isbn;
+            } else {
+                x.error();
+                exit(-1);
+            }
+        }
+    }
+    if (!data.name.empty()) {
+        name_table.erase(tmp.name, pos);
+        name_table.insert(data.name, pos);
+        tmp.name = data.name;
+    }
+    if (!data.author.empty()) {
+        author_table.erase(tmp.author, pos);
+        author_table.insert(data.author, pos);
+        tmp.author = data.author;
+    }
+    if (data.keyword_cnt) {
+        for (int i = 0; i < tmp.keyword_cnt; i++)
+            key_table.erase(tmp.keyword[i], pos);
+        for (int i = 0; i < data.keyword_cnt; i++)
+            key_table.insert(data.keyword[i], pos);
+        memcpy(tmp.keyword, data.keyword, sizeof(data.keyword));
+        tmp.keyword_cnt = data.keyword_cnt;
+    }
+    if (data.price)
+        tmp.price = data.price;
+    BaseFileSystem::erase(pos);
+    BaseFileSystem::insert(pos, tmp);
+    return 1;
+}
+
+bool BookFileSystem::inc_quantity(const int pos, const int quantity,
+                                  const double cost) {
+    if (!pos)
+        throw InvalidException("Import a book before select it");
+    CustomBook tmp = BaseFileSystem::find(pos);
+    tmp.quantity += quantity;
+    BaseFileSystem::erase(pos);
+    BaseFileSystem::insert(pos, tmp);
+    return 1;
+}
+
+double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
+    try {
+        int pos = isbn_table.find(isbn);
+        CustomBook tmp = BaseFileSystem::find(pos);
+        if (tmp.quantity < quantity)
+            return -1.0;
+        tmp.quantity -= quantity;
+        BaseFileSystem::erase(pos);
+        BaseFileSystem::insert(pos, tmp);
+        return tmp.price;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return -1;
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
+    try {
+        int pos = isbn_table.find(isbn);
+        CustomBook ret = BaseFileSystem::find(pos);
+        ret.pos = pos;
+        return ret;
+    } catch (const NormalException &x) {
+        if (x.what() == ULL_NOT_FOUND)
+            return CustomBook();
+        else {
+            x.error();
+            exit(-1);
+        }
+    }
+}
+
+std::vector<CustomBook> BookFileSystem::FileSearchByName(const BookStr &name) {
+    std::vector<int> pos = name_table.find(name);
+    std::vector<CustomBook> ret;
+    ret.clear();
+    for (auto p : pos)
+        ret.push_back(BaseFileSystem::find(p));
+    std::sort(ret.begin(), ret.end());
+    return ret;
+}
+
+std::vector<CustomBook>
+BookFileSystem::FileSearchByAuthor(const BookStr &author) {
+    std::vector<int> pos = author_table.find(author);
+    std::vector<CustomBook> ret;
+    ret.clear();
+    for (auto p : pos)
+        ret.push_back(BaseFileSystem::find(p));
+    std::sort(ret.begin(), ret.end());
+    return ret;
+}
+
+std::vector<CustomBook>
+BookFileSystem::FileSearchByKeyword(const BookStr &keyword) {
+    std::vector<int> pos = key_table.find(keyword);
+    std::vector<CustomBook> ret;
+    ret.clear();
+    for (auto p : pos)
+        ret.push_back(BaseFileSystem::find(p));
+    std::sort(ret.begin(), ret.end());
+    return ret;
+}
+
+void BookFileSystem::output() {
+    std::cout << "Book status:\n";
+    for (int i = 1; i <= siz; i++) {
+        CustomBook tmp = BaseFileSystem::find(i);
+        tmp.PrintInfo();
+    }
+    std::cout << '\n';
+}
+
+BookSystem::BookSystem() : book_table() {
+    std::ifstream fin("./data/book.log");
+    if (fin.good()) {
+        int len;
+        fin >> book_table.siz >> len;
+        total_earn.resize(len);
+        total_cost.resize(len);
+        for (int i = 0; i < len; i++)
+            fin >> total_earn[i] >> total_cost[i];
+    } else {
+        total_earn.push_back(0);
+        total_cost.push_back(0);
+    }
+}
+BookSystem::~BookSystem() {
+    std::ofstream fout("./data/book.log", std::ios::out | std::ios::trunc);
+    int len = total_earn.size();
+    fout << book_table.siz << ' ' << len << '\n';
+    for (int i = 0; i < len; i++)
+        fout << std::setprecision(20) << total_earn[i] << ' ' << total_cost[i]
+             << '\n';
+}
+
+int BookSystem::SelectBook(const char *isbn) {
+    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    if (tmp.empty()) {
+        tmp.isbn = isbn;
+        return book_table.insert(IsbnStr(isbn), tmp);
+    } else
+        return tmp.pos;
+}
+void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
+                            const char *_name, const char *_author,
+                            const char *_key, const double _price) {
+    if (!book_pos)
+        throw InvalidException("Modify a book before selecting it");
+    if (!book_table.edit(book_pos,
+                         CustomBook(_isbn, _name, _author, _key, _price)))
+        throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
+}
+
+void BookSystem::SearchByISBN(const char *isbn) {
+    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    if (tmp.empty()) {
+        std::cout << '\n';
+        return;
+    }
+    tmp.PrintInfo();
+}
+
+void BookSystem::SearchByName(const char *name) {
+    std::vector<CustomBook> tmp = book_table.FileSearchByName(BookStr(name));
+    if (tmp.empty()) {
+        std::cout << '\n';
+        return;
+    }
+    for (const auto &tmp_book : tmp)
+        tmp_book.PrintInfo();
+    return;
+}
+
+void BookSystem::SearchByAuthor(const char *author) {
+    std::vector<CustomBook> tmp =
+        book_table.FileSearchByAuthor(BookStr(author));
+    if (tmp.empty()) {
+        std::cout << '\n';
+        return;
+    }
+    for (const auto &tmp_book : tmp)
+        tmp_book.PrintInfo();
+    return;
+}
+
+void BookSystem::SearchByKeyword(const char *keyword) {
+    std::vector<CustomBook> tmp =
+        book_table.FileSearchByKeyword(BookStr(keyword));
+    if (tmp.empty()) {
+        std::cout << '\n';
+        return;
+    }
+    for (const auto &tmp_book : tmp)
+        tmp_book.PrintInfo();
+    return;
+}
+
+void BookSystem::SearchAll() {
+    std::set<CustomBook> tmp = book_table.search();
+    if (tmp.empty()) {
+        std::cout << '\n';
+        return;
+    }
+    for (const CustomBook &tmp_book : tmp)
+        tmp_book.PrintInfo();
+    return;
+}
+
+void BookSystem::output() { book_table.output(); }
+
+void BookSystem::AddBook(const char *isbn, const CustomBook &data) {
+    if (!book_table.insert(IsbnStr(isbn), data))
+        throw InvalidException("Insert a book that already exists");
+    return;
+}
+
+void BookSystem::BuyBook(const char *isbn, const int quantity) {
+    double res = book_table.dec_quantity(IsbnStr(isbn), quantity);
+    if (res == -1.0)
+        throw InvalidException("Not found the book or no enough book!");
+    res *= quantity;
+    std::cout << res << '\n';
+    total_earn.push_back(total_earn.back() + res);
+    total_cost.push_back(total_cost.back());
+}
+
+void BookSystem::ImportBook(const int book_pos, const int quantity,
+                            const double cost) {
+
+    if (!book_table.inc_quantity(book_pos, quantity, cost))
+        throw InvalidException("Not found the book to import");
+    total_earn.push_back(total_earn.back());
+    total_cost.push_back(total_cost.back() + cost);
+}
+
+void BookSystem::ShowFinance(const int rev) {
+    if (rev == -1)
+        std::cout << "+ " << total_earn.back() << " - " << total_cost.back()
+                  << '\n';
+    else if (rev == 0)
+        std::cout << '\n';
+    else {
+        int cnt = total_earn.size() - 1;
+        if (cnt - rev < 0)
+            throw InvalidException("Show finance out of range");
+        double earn_dif = total_earn[cnt] - total_earn[cnt - rev];
+        double cost_dif = total_cost[cnt] - total_cost[cnt - rev];
+        std::cout << "+ " << earn_dif << " - " << cost_dif << '\n';
+    }
+}
+
+} // namespace book
+
+} // namespace bookstore
+#ifndef BOOKSTORE_H
+#define BOOKSTORE_H
+
+
+#include <vector>
+
+namespace bookstore {
+
+class Bookstore : public user::UserSystem, public book::BookSystem {
+  public:
+    Bookstore();
+    ~Bookstore();
+
+    void AcceptMsg(const input::BookstoreParser &msg);
+
+  public:
+    void output();
+};
+
+} // namespace bookstore
+
+#endif
+
+#include <new>
+#include <string>
+#include <utility>
+
+namespace bookstore {
+
+Bookstore::Bookstore() {
+    // TODO
+}
+Bookstore::~Bookstore() {
+    // TODO
+}
+
+std::pair<int, bool> str_to_int(const std::string str) {
+    int num = 0;
+    for (const char &ch : str) {
+        if (ch < '0' || ch > '9')
+            return std::make_pair(0, 0);
+        num = num * 10 + ch - '0';
+    }
+    return std::make_pair(num, 1);
+}
+
+std::pair<double, bool> str_to_double(const std::string str) {
+    double tcost1 = 0, tcost2 = 0, tcost_div = 1.0;
+    bool dot_flag = 0;
+    for (const char &ch : str) {
+        if (ch == '.' && !dot_flag) {
+            dot_flag = 1;
+            continue;
+        }
+        if (ch < '0' || ch > '9')
+            return std::make_pair(0.0, 0);
+        if (!dot_flag)
+            tcost1 = tcost1 * 10.0 + (double)(ch - '0');
+        else {
+            tcost2 = tcost2 * 10.0 + (double)(ch - '0');
+            tcost_div *= 10.0;
+        }
+    }
+    if (dot_flag)
+        tcost1 += tcost2 / tcost_div;
+    return std::make_pair(tcost1, 1);
+}
+
+void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
+    using namespace input;
+    if (UserSystem::GetIdentity() < to_authentity(msg.func))
+        throw InvalidException("Check authority");
+    if (msg.func == QUIT)
+        throw NormalException(QUIT_SYSTEM);
+    if (msg.func == SU) {
+        UserSystem::UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
+        return;
+    }
+    if (msg.func == LOGOUT) {
+        UserSystem::UserLogout();
+        return;
+    }
+    if (msg.func == REG) {
+        UserSystem::UserRegister(msg.args[0].c_str(), msg.args[2].c_str(),
+                                 msg.args[1].c_str());
+        return;
+    }
+    if (msg.func == PASSWD) {
+        UserSystem::ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(),
+                                   msg.args[2].c_str());
+        return;
+    }
+    if (msg.func == USERADD) {
+        UserSystem::UserAdd(msg.args[0].c_str(), msg.args[3].c_str(),
+                            msg.args[1].c_str(), std::stoi(msg.args[2]));
+        return;
+    }
+    if (msg.func == DEL) {
+        UserSystem::UserErase(msg.args[0].c_str());
+        return;
+    }
+    if (msg.func == SHOW_ALL) {
+        BookSystem::SearchAll();
+        return;
+    }
+    if (msg.func == SHOW_ISBN) {
+        BookSystem::SearchByISBN(msg.args[0].c_str());
+        return;
+    }
+    if (msg.func == SHOW_NAME) {
+        BookSystem::SearchByName(msg.args[0].c_str());
+        return;
+    }
+    if (msg.func == SHOW_AUTHOR) {
+        BookSystem::SearchByAuthor(msg.args[0].c_str());
+        return;
+    }
+    if (msg.func == SHOW_KEYWORD) {
+        if (msg.args[0].find('|') != std::string::npos)
+            throw InvalidException("More than one keywords in show");
+        BookSystem::SearchByKeyword(msg.args[0].c_str());
+        return;
+    }
+    if (msg.func == BUY) {
+        std::pair<int, bool> quan = str_to_int(msg.args[1]);
+        if (!quan.first || !quan.second)
+            throw InvalidException("Buy: Number error");
+        BookSystem::BuyBook(msg.args[0].c_str(), quan.first);
+        return;
+    }
+    if (msg.func == SEL) {
+        int book_pos = BookSystem::SelectBook(msg.args[0].c_str());
+        UserSystem::SelectBook(book_pos);
+        return;
+    }
+    if (msg.func == MODIFY) {
+        int book_pos = UserSystem::GetBook();
+        if (UserSystem::GetBook() == 0)
+            throw InvalidException("Modify a book before selecting it");
+        std::pair<double, bool> price = str_to_double(msg.args[4]);
+        if (!price.second)
+            throw InvalidException("Modify: Number error");
+        BookSystem::ModifyBook(book_pos, msg.args[0].c_str(),
+                               msg.args[1].c_str(), msg.args[2].c_str(),
+                               msg.args[3].c_str(), price.first);
+        return;
+    }
+    if (msg.func == IMPORT) {
+        std::pair<int, bool> quan = str_to_int(msg.args[0]);
+        std::pair<double, bool> tot_cost = str_to_double(msg.args[1]);
+        if (!quan.second || !tot_cost.second)
+            throw InvalidException("Import: Number error");
+        BookSystem::ImportBook(UserSystem::GetBook(), quan.first,
+                               tot_cost.first);
+        return;
+    }
+    if (msg.func == FINANCE) {
+        if (msg.args.size()) {
+            std::pair<int, bool> rev = str_to_int(msg.args[0]);
+            if (!rev.second)
+                throw InvalidException("Finance: Number error");
+            BookSystem::ShowFinance(rev.first);
+        } else
+            BookSystem::ShowFinance();
+        return;
+    }
+    if (msg.func == LOG) {
+        return;
+    }
+    throw InvalidException("Bookstore does NOT support this operation.");
+}
+
+void Bookstore::output() {
+    UserSystem::output();
+    BookSystem::output();
+}
+
+} // namespace bookstore
+
+#include <iostream>
+
+
+using bookstore::Bookstore;
+using bookstore::input::BookstoreLexer;
+using bookstore::input::BookstoreParser;
+
+int output_status = 0;
+
+void JudgeInput(int argc, char *argv[]) {
+    std::ios::sync_with_stdio(false);
+    std::cout.setf(std::ios::fixed);
+    std::cout.precision(2);
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--show-status=0"))
+            output_status = 0;
+        else if (!strcmp(argv[i], "--show-status=1"))
+            output_status = 1;
+        else if (!strcmp(argv[i], "--show-status=2"))
+            output_status = 2;
+        else if (!strcmp(argv[i], "--inherit-data=0"))
+            std::filesystem::remove_all("data");
+    }
+    return;
+}
+
+int main(int argc, char *argv[]) {
+    JudgeInput(argc, argv);
+    Bookstore root;
+        std::string input;
+    while (
+        getline(std::cin, input)) {
+        try {
+            BookstoreLexer token(input);
+            BookstoreParser msg(token);
+            root.AcceptMsg(msg);
+            if (output_status)
+                std::cout << "Valid\n";
+        } catch (NormalException(QUIT_SYSTEM)) {
+            break;
+        } catch (const InvalidException &msg) {
+            std::cout << "Invalid";
+            if (output_status)
+                std::cout << ": " << msg.details();
+            std::cout << '\n';
+        } catch (const UnknownException &msg) {
+            std::cout << msg.details() << '\n';
+            if (msg.what() != INPUT)
+                while (true);
+            std::cout << "Invalid";
+            if (output_status)
+                std::cout << ": " << msg.details();
+            std::cout << '\n';
+        } catch (...) {
+            while (true);
+            std::cout << "?";
+        }
+        if (output_status == 2)
+            root.output();
+    }
     return 0;
 }

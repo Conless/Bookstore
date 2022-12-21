@@ -1,5 +1,7 @@
 #include "TokenScanner.h"
 
+#include <cstring>
+
 #include "Utils/Exception.h"
 
 namespace bookstore {
