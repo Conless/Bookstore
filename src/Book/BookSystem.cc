@@ -233,9 +233,12 @@ BookSystem::~BookSystem() {
 }
 
 int BookSystem::SelectBook(const char *isbn) {
-    BookInfo tmp;
-    tmp.isbn = isbn;
-    return book_table.insert(IsbnStr(isbn), tmp).first;
+    BookInfo tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    if (tmp.empty()) {
+        tmp.isbn = isbn;
+        return book_table.insert(IsbnStr(isbn), tmp).first;
+    } else
+        return tmp.pos;
 }
 void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,

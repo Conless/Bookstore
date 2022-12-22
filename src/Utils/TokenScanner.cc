@@ -20,27 +20,41 @@ int to_authentity(const Function &func) {
     return 7;
 }
 
-BookstoreLexer::BookstoreLexer(const std::string &str_in_line,
-                               char divide_opt) {
-    int siz = str_in_line.size();
+void SimplifySpace(std::string &str) {
+    while (str[0] == ' ')
+        str.erase(0, 1);
+    while (str[str.size() - 1] == ' ')
+        str.erase(str.size() - 1, 1);
+    for (int i = 1; i < str.size(); i++)
+        if (str[i] == str[i - 1] && str[i] == ' ') {
+            str.erase(i, 1);
+            i--;
+        }
+}
+
+BookstoreLexer::BookstoreLexer(std::string str_in_line, char divide_opt) {
+    SimplifySpace(str_in_line);
     int las = 0;
-    for (int i = 0; i < siz; i++)
+    int siz = str_in_line.size();
+    for (int i = 0; i < siz; i++) {
+        if (!isprint(str_in_line[i]))
+            throw InvalidException("Invisible char");
         if (str_in_line[i] == divide_opt) {
             push_back(str_in_line.substr(las, i - las));
             las = i + 1;
         } else if (i == siz - 1) {
             push_back(str_in_line.substr(las, i - las + 1));
         }
+    }
 }
 
 BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     if (!input.size())
-        throw UnknownException(INPUT, "Read an empty input line.");
+        throw NormalException(EMPTY_INPUT);
     BookstoreLexer input_str;
     if (input[0] == "exit" || input[0] == "quit") {
         if (input.size() != 1)
-            throw UnknownException(
-                INPUT,
+            throw InvalidException(
                 "Exit or quit message followed with unexpected parameters.");
         *this = BookstoreParser(QUIT, input_str);
         return;
@@ -55,21 +69,21 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             input_str.push_back(input[2]);
             *this = BookstoreParser(SU, input_str);
         } else
-            throw UnknownException(
-                INPUT, "Su message followed with unexpected parameters.");
+            throw InvalidException(
+                "Su message followed with unexpected parameters.");
         return;
     }
     if (input[0] == "logout") {
         if (input.size() != 1)
-            throw UnknownException(
-                INPUT, "Logout message followed with unexpected parameters.");
+            throw InvalidException(
+                "Logout message followed with unexpected parameters.");
         *this = BookstoreParser(LOGOUT, BookstoreLexer());
         return;
     }
     if (input[0] == "register") {
         if (input.size() != 4)
-            throw UnknownException(
-                INPUT, "Register message followed with unexpected parameters.");
+            throw InvalidException(
+                "Register message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         input_str.push_back(input[3]);
@@ -91,13 +105,13 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             *this = BookstoreParser(PASSWD, input_str);
             return;
         }
-        throw UnknownException(
-            INPUT, "Passwd message followed with unexpected parameters.");
+        throw InvalidException(
+            "Passwd message followed with unexpected parameters.");
     }
     if (input[0] == "useradd") {
         if (input.size() != 5)
-            throw UnknownException(
-                INPUT, "Useradd message followed with unexpected parameters.");
+            throw InvalidException(
+                "Useradd message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         input_str.push_back(input[3]);
@@ -107,8 +121,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "delete") {
         if (input.size() != 2)
-            throw UnknownException(
-                INPUT, "Delete message followed with unexpected parameters.");
+            throw InvalidException(
+                "Delete message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         *this = BookstoreParser(DEL, input_str);
         return;
@@ -122,20 +136,24 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             else if (input.size() == 3)
                 input_str.push_back(input[2]);
             else
-                throw UnknownException(INPUT, "Show Finance message followed "
-                                              "with unexpected parameters.");
+                throw InvalidException("Show Finance message followed "
+                                       "with unexpected parameters.");
             *this = BookstoreParser(FINANCE, input_str);
 
         } else {
             BookstoreLexer input_div(input[1], '=');
             if (input_div.size() != 2)
-                throw UnknownException(
-                    INPUT, "Show message followed with unexpected parameters.");
+                throw InvalidException(
+                    "Show message followed with unexpected parameters.");
             input_str.push_back(input_div[1]);
             if (input_div[0] == "-ISBN")
                 *this = BookstoreParser(SHOW_ISBN, input_str);
             else {
-                input_str[0] = input_div[1].substr(1, input_div[1].size() - 2);
+                input_div[1].erase(0, 1);
+                input_div[1].erase(input_div[1].size() - 1, 1);
+                if (input_div[1].find('\"') != std::string::npos)
+                    throw InvalidException("Quotation mark not allowed");
+                input_str[0] = input_div[1];
                 if (input_div[0] == "-name")
                     *this = BookstoreParser(SHOW_NAME, input_str);
                 else if (input_div[0] == "-author")
@@ -143,8 +161,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
                 else if (input_div[0] == "-keyword")
                     *this = BookstoreParser(SHOW_KEYWORD, input_str);
                 else
-                    throw UnknownException(
-                        INPUT,
+                    throw InvalidException(
                         "Show message followed with unexpected parameters.");
             }
         }
@@ -152,8 +169,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "buy") {
         if (input.size() != 3)
-            throw UnknownException(
-                INPUT, "Buy message followed with unexpected parameters.");
+            throw InvalidException(
+                "Buy message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         *this = BookstoreParser(BUY, input_str);
@@ -161,8 +178,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "select") {
         if (input.size() != 2)
-            throw UnknownException(
-                INPUT, "Select message followed with unexpected parameters.");
+            throw InvalidException(
+                "Select message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         *this = BookstoreParser(SEL, input_str);
         return;
@@ -177,8 +194,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         for (int i = 1; i < siz; i++) {
             BookstoreLexer input_div(input[i], '=');
             if (input_div.size() != 2)
-                throw UnknownException(
-                    INPUT,
+                throw InvalidException(
                     "Modify message followed with unexpected parameters.");
             int opt;
             if (input_div[0] == "-ISBN")
@@ -192,24 +208,30 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             else if (input_div[0] == "-price")
                 opt = 4;
             else
-                throw UnknownException(
-                    INPUT,
+                throw InvalidException(
                     "Modify message followed with unexpected parameters.");
             if (input_str[opt] != "")
                 throw InvalidException("Repeated modify parameters");
-            if (opt == 0 || opt == 4)
-                input_str[opt] = input_div[1];
-            else
-                input_str[opt] =
-                    input_div[1].substr(1, input_div[1].size() - 2);
+            if (opt != 0 && opt != 4) {
+                if (input_div[1][0] != '\"' ||
+                    input_div[1][input_div[1].size() - 1] != '\"')
+                    throw InvalidException("Quotation not found");
+                input_div[1].erase(0, 1);
+                input_div[1].erase(input_div[1].size() - 1, 1);
+                if (input_div[1].find('\"') != std::string::npos)
+                    throw InvalidException("Quotation mark not allowed");
+            }
+            if (!input_div.size())
+                throw InvalidException("Check length");
+            input_str[opt] = input_div[1];
         }
         *this = BookstoreParser(MODIFY, input_str);
         return;
     }
     if (input[0] == "import") {
         if (input.size() != 3)
-            throw UnknownException(
-                INPUT, "Import message followed with unexpected parameters.");
+            throw InvalidException(
+                "Import message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         *this = BookstoreParser(IMPORT, input_str);

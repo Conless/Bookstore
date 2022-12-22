@@ -34,7 +34,7 @@ int to_authentity(const Function &func);
 class BookstoreLexer : public std::vector<std::string> {
   public:
     BookstoreLexer() {}
-    BookstoreLexer(const std::string &str_in_line, char divide_opt = ' ');
+    BookstoreLexer(std::string str_in_line, char divide_opt = ' ');
     const char ** c_str();
 };
 

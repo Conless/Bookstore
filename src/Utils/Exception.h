@@ -11,6 +11,7 @@ enum ExceptionType {
     UNIMPLEMENTED,
     UNKNOWN,
     QUIT_SYSTEM,
+    EMPTY_INPUT,
     ULL_ERASE_NOT_FOUND,
     ULL_INSERTED,
     ULL_NOT_FOUND,

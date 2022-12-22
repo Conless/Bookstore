@@ -19,6 +19,7 @@ enum ExceptionType {
     UNIMPLEMENTED,
     UNKNOWN,
     QUIT_SYSTEM,
+    EMPTY_INPUT,
     ULL_ERASE_NOT_FOUND,
     ULL_INSERTED,
     ULL_NOT_FOUND,
@@ -94,7 +95,8 @@ int to_authentity(const Function &func);
 class BookstoreLexer : public std::vector<std::string> {
   public:
     BookstoreLexer() {}
-    BookstoreLexer(const std::string &str_in_line, char divide_opt = ' ');
+    BookstoreLexer(std::string str_in_line, char divide_opt = ' ');
+    const char ** c_str();
 };
 
 class BookstoreParser {
@@ -113,6 +115,8 @@ class BookstoreParser {
 
 #endif
 
+#include <cstring>
+
 
 namespace bookstore {
 
@@ -130,27 +134,41 @@ int to_authentity(const Function &func) {
     return 7;
 }
 
-BookstoreLexer::BookstoreLexer(const std::string &str_in_line,
-                               char divide_opt) {
-    int siz = str_in_line.size();
+void SimplifySpace(std::string &str) {
+    while (str[0] == ' ')
+        str.erase(0, 1);
+    while (str[str.size() - 1] == ' ')
+        str.erase(str.size() - 1, 1);
+    for (int i = 1; i < str.size(); i++)
+        if (str[i] == str[i - 1] && str[i] == ' ') {
+            str.erase(i, 1);
+            i--;
+        }
+}
+
+BookstoreLexer::BookstoreLexer(std::string str_in_line, char divide_opt) {
+    SimplifySpace(str_in_line);
     int las = 0;
-    for (int i = 0; i < siz; i++)
+    int siz = str_in_line.size();
+    for (int i = 0; i < siz; i++) {
+        if (!isprint(str_in_line[i]))
+            throw InvalidException("Invisible char");
         if (str_in_line[i] == divide_opt) {
             push_back(str_in_line.substr(las, i - las));
             las = i + 1;
         } else if (i == siz - 1) {
             push_back(str_in_line.substr(las, i - las + 1));
         }
+    }
 }
 
 BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     if (!input.size())
-        throw UnknownException(INPUT, "Read an empty input line.");
+        throw NormalException(EMPTY_INPUT);
     BookstoreLexer input_str;
     if (input[0] == "exit" || input[0] == "quit") {
         if (input.size() != 1)
-            throw UnknownException(
-                INPUT,
+            throw InvalidException(
                 "Exit or quit message followed with unexpected parameters.");
         *this = BookstoreParser(QUIT, input_str);
         return;
@@ -165,21 +183,21 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             input_str.push_back(input[2]);
             *this = BookstoreParser(SU, input_str);
         } else
-            throw UnknownException(
-                INPUT, "Su message followed with unexpected parameters.");
+            throw InvalidException(
+                "Su message followed with unexpected parameters.");
         return;
     }
     if (input[0] == "logout") {
         if (input.size() != 1)
-            throw UnknownException(
-                INPUT, "Logout message followed with unexpected parameters.");
+            throw InvalidException(
+                "Logout message followed with unexpected parameters.");
         *this = BookstoreParser(LOGOUT, BookstoreLexer());
         return;
     }
     if (input[0] == "register") {
         if (input.size() != 4)
-            throw UnknownException(
-                INPUT, "Register message followed with unexpected parameters.");
+            throw InvalidException(
+                "Register message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         input_str.push_back(input[3]);
@@ -201,13 +219,13 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             *this = BookstoreParser(PASSWD, input_str);
             return;
         }
-        throw UnknownException(
-            INPUT, "Passwd message followed with unexpected parameters.");
+        throw InvalidException(
+            "Passwd message followed with unexpected parameters.");
     }
     if (input[0] == "useradd") {
         if (input.size() != 5)
-            throw UnknownException(
-                INPUT, "Useradd message followed with unexpected parameters.");
+            throw InvalidException(
+                "Useradd message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         input_str.push_back(input[3]);
@@ -217,8 +235,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "delete") {
         if (input.size() != 2)
-            throw UnknownException(
-                INPUT, "Delete message followed with unexpected parameters.");
+            throw InvalidException(
+                "Delete message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         *this = BookstoreParser(DEL, input_str);
         return;
@@ -232,20 +250,24 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             else if (input.size() == 3)
                 input_str.push_back(input[2]);
             else
-                throw UnknownException(INPUT, "Show Finance message followed "
-                                              "with unexpected parameters.");
+                throw InvalidException("Show Finance message followed "
+                                       "with unexpected parameters.");
             *this = BookstoreParser(FINANCE, input_str);
 
         } else {
             BookstoreLexer input_div(input[1], '=');
             if (input_div.size() != 2)
-                throw UnknownException(
-                    INPUT, "Show message followed with unexpected parameters.");
+                throw InvalidException(
+                    "Show message followed with unexpected parameters.");
             input_str.push_back(input_div[1]);
             if (input_div[0] == "-ISBN")
                 *this = BookstoreParser(SHOW_ISBN, input_str);
             else {
-                input_str[0] = input_div[1].substr(1, input_div[1].size() - 2);
+                input_div[1].erase(0, 1);
+                input_div[1].erase(input_div[1].size() - 1, 1);
+                if (input_div[1].find('\"') != std::string::npos)
+                    throw InvalidException("Quotation mark not allowed");
+                input_str[0] = input_div[1];
                 if (input_div[0] == "-name")
                     *this = BookstoreParser(SHOW_NAME, input_str);
                 else if (input_div[0] == "-author")
@@ -253,8 +275,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
                 else if (input_div[0] == "-keyword")
                     *this = BookstoreParser(SHOW_KEYWORD, input_str);
                 else
-                    throw UnknownException(
-                        INPUT,
+                    throw InvalidException(
                         "Show message followed with unexpected parameters.");
             }
         }
@@ -262,8 +283,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "buy") {
         if (input.size() != 3)
-            throw UnknownException(
-                INPUT, "Buy message followed with unexpected parameters.");
+            throw InvalidException(
+                "Buy message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         *this = BookstoreParser(BUY, input_str);
@@ -271,8 +292,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "select") {
         if (input.size() != 2)
-            throw UnknownException(
-                INPUT, "Select message followed with unexpected parameters.");
+            throw InvalidException(
+                "Select message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         *this = BookstoreParser(SEL, input_str);
         return;
@@ -287,8 +308,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         for (int i = 1; i < siz; i++) {
             BookstoreLexer input_div(input[i], '=');
             if (input_div.size() != 2)
-                throw UnknownException(
-                    INPUT,
+                throw InvalidException(
                     "Modify message followed with unexpected parameters.");
             int opt;
             if (input_div[0] == "-ISBN")
@@ -302,24 +322,30 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             else if (input_div[0] == "-price")
                 opt = 4;
             else
-                throw UnknownException(
-                    INPUT,
+                throw InvalidException(
                     "Modify message followed with unexpected parameters.");
             if (input_str[opt] != "")
                 throw InvalidException("Repeated modify parameters");
-            if (opt == 0 || opt == 4)
-                input_str[opt] = input_div[1];
-            else
-                input_str[opt] =
-                    input_div[1].substr(1, input_div[1].size() - 2);
+            if (opt != 0 && opt != 4) {
+                if (input_div[1][0] != '\"' ||
+                    input_div[1][input_div[1].size() - 1] != '\"')
+                    throw InvalidException("Quotation not found");
+                input_div[1].erase(0, 1);
+                input_div[1].erase(input_div[1].size() - 1, 1);
+                if (input_div[1].find('\"') != std::string::npos)
+                    throw InvalidException("Quotation mark not allowed");
+            }
+            if (!input_div.size())
+                throw InvalidException("Check length");
+            input_str[opt] = input_div[1];
         }
         *this = BookstoreParser(MODIFY, input_str);
         return;
     }
     if (input[0] == "import") {
         if (input.size() != 3)
-            throw UnknownException(
-                INPUT, "Import message followed with unexpected parameters.");
+            throw InvalidException(
+                "Import message followed with unexpected parameters.");
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         *this = BookstoreParser(IMPORT, input_str);
@@ -1108,7 +1134,7 @@ class UserSystem {
     void output();
 
   private:
-    std::stack<std::pair<BookstoreUser, int>> user_stack;
+    std::vector<std::pair<BookstoreUser, int>> user_stack;
     UserFileSystem user_table;
 };
 
@@ -1127,12 +1153,11 @@ namespace bookstore {
 namespace user {
 
 const BookstoreUser UserRoot = {"root", "root", "sjtu", 7};
-const BookstoreUser UserGuest = {"DarkBluntness", "BrightSharpness",
-                                 "BrightBluntness", 0};
+const BookstoreUser UserGuest = {"Conmore", "Conmost",
+                                 "Conleast", 0};
 
 UserFileSystem::UserFileSystem()
-    : BaseFileSystem("user"), uid_table("uid"), siz(0) {
-}
+    : BaseFileSystem("user"), uid_table("uid"), siz(0) {}
 
 bool UserFileSystem::insert(const UserStr &uid, const BookstoreUser &data) {
     try {
@@ -1197,7 +1222,9 @@ BookstoreUser UserFileSystem::find(const UserStr &uid) {
 void UserFileSystem::output() {
     for (int i = 1; i <= siz; i++) {
         BookstoreUser user = BaseFileSystem::find(i);
-        std::cout << "ID=" << user.id.str << " Name=" << user.name.str << " Passwd=" << user.pswd.str << " Iden=" << user.iden << '\n';
+        std::cout << "ID=" << user.id.str << " Name=" << user.name.str
+                  << " Passwd=" << user.pswd.str << " Iden=" << user.iden
+                  << '\n';
     }
 }
 
@@ -1205,9 +1232,11 @@ UserSystem::UserSystem() {
     std::ifstream fin("./data/user.log");
     if (fin.good())
         fin >> user_table.siz;
-    user_table.insert(UserRoot.id, UserRoot);
-    user_table.insert(UserGuest.id, UserGuest);
-    user_stack.push(std::make_pair(UserGuest, 0));
+    else {
+        user_table.insert(UserRoot.id, UserRoot);
+        user_table.insert(UserGuest.id, UserGuest);
+    }
+    user_stack.push_back(std::make_pair(UserGuest, 0));
 }
 
 UserSystem::~UserSystem() {
@@ -1224,29 +1253,28 @@ void UserSystem::UserRegister(const char *user_id, const char *user_name,
 }
 
 void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
-        throw UnknownException(UNKNOWN, "Not found such data");
+        throw InvalidException("Not found such data");
     if ((cur.iden > tmp.iden && !strcmp(user_pswd, "")) ||
         user_pswd == tmp.pswd)
-        user_stack.push(std::make_pair(tmp, 0));
+        user_stack.push_back(std::make_pair(tmp, 0));
     else
         throw InvalidException("Wrong password!");
 }
 void UserSystem::UserLogout() {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     if (cur == UserGuest)
         throw InvalidException("You've logout all the accounts");
-    user_stack.pop();
+    user_stack.pop_back();
 }
 void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
                                 const char *new_pswd) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
-        throw UnknownException(
-            UNKNOWN, "Not found such user when modifying the password.");
+        throw InvalidException("Not found such user when modifying the password.");
     if ((cur.iden == 7 && !strcmp(cur_pswd, "")) || cur_pswd == tmp.pswd) {
         tmp.pswd = UserStr(new_pswd);
         user_table.edit(tmp.id, tmp);
@@ -1255,7 +1283,7 @@ void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
 }
 void UserSystem::UserAdd(const char *user_id, const char *user_name,
                          const char *user_pswd, const int iden) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp(user_id, user_name, user_pswd, iden);
     if (cur.iden <= iden)
         throw InvalidException(
@@ -1264,7 +1292,10 @@ void UserSystem::UserAdd(const char *user_id, const char *user_name,
         throw InvalidException("The uid to be added already exists.");
 }
 void UserSystem::UserErase(const char *user_id) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
+    for (auto dt : user_stack)
+        if (dt.first.id == user_id)
+            throw InvalidException("Deleting a login user");
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
         throw InvalidException("Not found user when erasing");
@@ -1275,15 +1306,15 @@ void UserSystem::UserErase(const char *user_id) {
 }
 
 void UserSystem::SelectBook(const int book_pos) {
-    user_stack.top().second = book_pos;
+    user_stack.back().second = book_pos;
 }
 
-int UserSystem::GetIdentity() const { return user_stack.top().first.iden; }
+int UserSystem::GetIdentity() const { return user_stack.back().first.iden; }
 
 int UserSystem::GetBook() const {
-    if (user_stack.top().first == UserGuest)
+    if (user_stack.back().first == UserGuest)
         return 0;
-    return user_stack.top().second;
+    return user_stack.back().second;
 }
 
 void UserSystem::output() {
@@ -1315,14 +1346,14 @@ using BookStr = list::KeyType<kMaxBookLen>;
 using map = list::UnrolledLinkedListUnique<kMaxISBNLen>;
 using multimap = list::UnrolledLinkedList<kMaxBookLen>;
 
-class CustomBook {
+class BookInfo {
   public:
-    CustomBook();
-    explicit CustomBook(const char *_isbn) : CustomBook() { isbn = _isbn; }
-    explicit CustomBook(const char *_isbn, const char *_name, const char *_author, const char *_keyword_in_line, const double _price);
+    BookInfo();
+    explicit BookInfo(const char *_isbn) : BookInfo() { isbn = _isbn; }
+    explicit BookInfo(const char *_isbn, const char *_name, const char *_author, const std::vector<char*> &_keyword, const int _keyword_cnt, const double _price);
 
     void PrintInfo() const;
-    bool operator<(const CustomBook &x) const { return isbn < x.isbn; }
+    bool operator<(const BookInfo &x) const { return isbn < x.isbn; }
     bool empty() { return isbn == ""; }
 
   public:
@@ -1335,20 +1366,22 @@ class CustomBook {
     double price;
 };
 
-class BookFileSystem : public file::BaseFileSystem<CustomBook> {
+class BookFileSystem : public file::BaseFileSystem<BookInfo> {
   public:
     BookFileSystem();
     ~BookFileSystem() = default;
-    int insert(const IsbnStr &isbn, const CustomBook &data);
-    bool erase(const IsbnStr &isbn);
-    bool edit(const IsbnStr &isbn, CustomBook data);
-    bool edit(const int pos, CustomBook data);
-    bool inc_quantity(const int pos, const int quantity, const double cost);
-    double dec_quantity(const IsbnStr &isbn, const int quantity);
-    CustomBook FileSearchByISBN(const IsbnStr &isbn);
-    std::vector<CustomBook> FileSearchByName(const BookStr &name);
-    std::vector<CustomBook> FileSearchByAuthor(const BookStr &author);
-    std::vector<CustomBook> FileSearchByKeyword(const BookStr &keyword);
+
+    std::pair<int, bool> insert(const IsbnStr &isbn, const BookInfo &data);
+    std::pair<int, bool> erase(const IsbnStr &isbn);
+    std::pair<int, bool> edit(const int pos, BookInfo data);
+
+    std::pair<double, bool> import(const int pos, const int quantity, const double cost);
+    std::pair<double, bool> buy(const IsbnStr &isbn, const int quantity);
+    
+    BookInfo FileSearchByISBN(const IsbnStr &isbn);
+    std::vector<BookInfo> FileSearchByName(const BookStr &name);
+    std::vector<BookInfo> FileSearchByAuthor(const BookStr &author);
+    std::vector<BookInfo> FileSearchByKeyword(const BookStr &keyword);
 
   public:
     void output();
@@ -1367,7 +1400,6 @@ class BookSystem {
     ~BookSystem();
 
     int SelectBook(const char *isbn);
-    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const char *_key, const double _price);
 
     void SearchAll();
     void SearchByISBN(const char *isbn);
@@ -1376,13 +1408,15 @@ class BookSystem {
     void SearchByKeyword(const char *keyword);
 
     void BuyBook(const char *isbn, const int quantity);
+
+    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const std::vector<char *> &_key, const int _key_cnt, const double _price);
     void ImportBook(const int book_pos, const int quantity, const double cost);
 
     void ShowFinance(const int rev = -1);
 
   protected:
     void output();
-    void AddBook(const char *isbn, const CustomBook &data);
+    void AddBook(const char *isbn, const BookInfo &data);
 
   private:
     BookFileSystem book_table;
@@ -1400,30 +1434,25 @@ class BookSystem {
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 
 namespace bookstore {
 
 namespace book {
 
-CustomBook::CustomBook()
+BookInfo::BookInfo()
     : isbn(), name(), author(), keyword_cnt(0), quantity(0), price(0.0) {}
 
-CustomBook::CustomBook(const char *_isbn, const char *_name,
-                       const char *_author, const char *_keyword_in_line,
-                       const double _price)
-    : isbn(_isbn), name(_name), author(_author), price(_price) {
-    input::BookstoreLexer ret(std::string(_keyword_in_line), '|');
-    for (int i = 0; i < ret.size(); i++)
-        keyword[i] = ret[i].c_str();
-    keyword_cnt = ret.size();
-    std::sort(ret.begin(), ret.end());
-    for (int i = 1; i < ret.size(); i++)
-        if (ret[i] == ret[i - 1])
-            throw InvalidException("Duplicated keyword!");
+BookInfo::BookInfo(const char *_isbn, const char *_name,
+                       const char *_author, const std::vector<char *> &_keyword,
+                       const int _keyword_cnt, const double _price)
+    : isbn(_isbn), name(_name), author(_author), keyword_cnt(_keyword_cnt), price(_price) {
+    for (int i = 0; i < keyword_cnt; i++)
+        keyword[i] = _keyword[i];
 }
 
-void CustomBook::PrintInfo() const {
+void BookInfo::PrintInfo() const {
     std::cout << isbn.str << '\t' << name.str << '\t' << author.str << '\t';
     for (int i = 0; i < keyword_cnt; i++) {
         if (i)
@@ -1437,7 +1466,7 @@ BookFileSystem::BookFileSystem()
     : BaseFileSystem("book"), isbn_table("isbn"), name_table("name"),
       author_table("author"), key_table("key"), siz(0) {}
 
-int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
+std::pair<int, bool> BookFileSystem::insert(const IsbnStr &isbn, const BookInfo &data) {
     try {
         isbn_table.insert(isbn, siz + 1);
         siz++;
@@ -1446,10 +1475,10 @@ int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
         for (int i = 0; i < data.keyword_cnt; i++)
             key_table.insert(data.keyword[i], siz);
         BaseFileSystem::insert(siz, data);
-        return siz;
+        return std::make_pair(siz, true);
     } catch (const NormalException &x) {
-        if (x.what() == ULL_NOT_FOUND)
-            return 0;
+        if (x.what() == ULL_INSERTED)
+            return std::make_pair(isbn_table.find(isbn), false);
         else {
             x.error();
             exit(-1);
@@ -1457,19 +1486,19 @@ int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
     }
 }
 
-bool BookFileSystem::erase(const IsbnStr &isbn) {
+std::pair<int, bool> BookFileSystem::erase(const IsbnStr &isbn) {
     try {
         int pos = isbn_table.erase(isbn);
-        CustomBook tmp = BaseFileSystem::find(pos);
+        BookInfo tmp = BaseFileSystem::find(pos);
         name_table.erase(tmp.name, pos);
         author_table.erase(tmp.author, pos);
         for (int i = 0; i < tmp.keyword_cnt; i++)
             key_table.erase(tmp.keyword[i], siz);
         BaseFileSystem::erase(pos);
-        return 1;
+        return std::make_pair(pos, true);
     } catch (const NormalException &x) {
         if (x.what() == ULL_ERASE_NOT_FOUND)
-            return 0;
+            return std::make_pair(0, false);
         else {
             x.error();
             exit(-1);
@@ -1477,27 +1506,12 @@ bool BookFileSystem::erase(const IsbnStr &isbn) {
     }
 }
 
-bool BookFileSystem::edit(const IsbnStr &isbn, CustomBook data) {
-    int pos;
-    try {
-        pos = isbn_table.find(isbn);
-    } catch (const NormalException &x) {
-        if (x.what() == ULL_NOT_FOUND)
-            return 0;
-        else {
-            x.error();
-            exit(-1);
-        }
-    }
-    return edit(pos, data);
-}
-
-bool BookFileSystem::edit(const int pos, CustomBook data) {
-    CustomBook tmp = BaseFileSystem::find(pos);
+std::pair<int, bool> BookFileSystem::edit(const int pos, BookInfo data) {
+    BookInfo tmp = BaseFileSystem::find(pos);
     if (!data.isbn.empty()) {
         try {
             isbn_table.find(data.isbn);
-            return 0;
+            return std::make_pair(pos, false);
         } catch (const NormalException &x) {
             if (x.what() == ULL_NOT_FOUND) {
                 isbn_table.erase(tmp.isbn);
@@ -1531,33 +1545,33 @@ bool BookFileSystem::edit(const int pos, CustomBook data) {
         tmp.price = data.price;
     BaseFileSystem::erase(pos);
     BaseFileSystem::insert(pos, tmp);
-    return 1;
+    return std::make_pair(pos, true);
 }
 
-bool BookFileSystem::inc_quantity(const int pos, const int quantity,
+std::pair<double, bool> BookFileSystem::import(const int pos, const int quantity,
                                   const double cost) {
     if (!pos)
         throw InvalidException("Import a book before select it");
-    CustomBook tmp = BaseFileSystem::find(pos);
+    BookInfo tmp = BaseFileSystem::find(pos);
     tmp.quantity += quantity;
     BaseFileSystem::erase(pos);
     BaseFileSystem::insert(pos, tmp);
-    return 1;
+    return std::make_pair(cost, true);
 }
 
-double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
+std::pair<double, bool> BookFileSystem::buy(const IsbnStr &isbn, const int quantity) {
     try {
         int pos = isbn_table.find(isbn);
-        CustomBook tmp = BaseFileSystem::find(pos);
+        BookInfo tmp = BaseFileSystem::find(pos);
         if (tmp.quantity < quantity)
-            return -1.0;
+            return std::make_pair(0.0, false);
         tmp.quantity -= quantity;
         BaseFileSystem::erase(pos);
         BaseFileSystem::insert(pos, tmp);
-        return tmp.price;
+        return std::make_pair(tmp.price, true);
     } catch (const NormalException &x) {
         if (x.what() == ULL_NOT_FOUND)
-            return -1;
+            return std::make_pair(0.0, false);
         else {
             x.error();
             exit(-1);
@@ -1565,15 +1579,15 @@ double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
     }
 }
 
-CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
+BookInfo BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
     try {
         int pos = isbn_table.find(isbn);
-        CustomBook ret = BaseFileSystem::find(pos);
+        BookInfo ret = BaseFileSystem::find(pos);
         ret.pos = pos;
         return ret;
     } catch (const NormalException &x) {
         if (x.what() == ULL_NOT_FOUND)
-            return CustomBook();
+            return BookInfo();
         else {
             x.error();
             exit(-1);
@@ -1581,9 +1595,9 @@ CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
     }
 }
 
-std::vector<CustomBook> BookFileSystem::FileSearchByName(const BookStr &name) {
+std::vector<BookInfo> BookFileSystem::FileSearchByName(const BookStr &name) {
     std::vector<int> pos = name_table.find(name);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -1591,10 +1605,10 @@ std::vector<CustomBook> BookFileSystem::FileSearchByName(const BookStr &name) {
     return ret;
 }
 
-std::vector<CustomBook>
+std::vector<BookInfo>
 BookFileSystem::FileSearchByAuthor(const BookStr &author) {
     std::vector<int> pos = author_table.find(author);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -1602,10 +1616,10 @@ BookFileSystem::FileSearchByAuthor(const BookStr &author) {
     return ret;
 }
 
-std::vector<CustomBook>
+std::vector<BookInfo>
 BookFileSystem::FileSearchByKeyword(const BookStr &keyword) {
     std::vector<int> pos = key_table.find(keyword);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -1616,7 +1630,7 @@ BookFileSystem::FileSearchByKeyword(const BookStr &keyword) {
 void BookFileSystem::output() {
     std::cout << "Book status:\n";
     for (int i = 1; i <= siz; i++) {
-        CustomBook tmp = BaseFileSystem::find(i);
+        BookInfo tmp = BaseFileSystem::find(i);
         tmp.PrintInfo();
     }
     std::cout << '\n';
@@ -1646,25 +1660,25 @@ BookSystem::~BookSystem() {
 }
 
 int BookSystem::SelectBook(const char *isbn) {
-    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    BookInfo tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
     if (tmp.empty()) {
         tmp.isbn = isbn;
-        return book_table.insert(IsbnStr(isbn), tmp);
+        return book_table.insert(IsbnStr(isbn), tmp).first;
     } else
         return tmp.pos;
 }
 void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,
-                            const char *_key, const double _price) {
+                            const std::vector<char *> &_key, const int _key_cnt, const double _price) {
     if (!book_pos)
         throw InvalidException("Modify a book before selecting it");
     if (!book_table.edit(book_pos,
-                         CustomBook(_isbn, _name, _author, _key, _price)))
+                         BookInfo(_isbn, _name, _author, _key, _key_cnt, _price)).second)
         throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
 }
 
 void BookSystem::SearchByISBN(const char *isbn) {
-    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    BookInfo tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
     if (tmp.empty()) {
         std::cout << '\n';
         return;
@@ -1673,7 +1687,7 @@ void BookSystem::SearchByISBN(const char *isbn) {
 }
 
 void BookSystem::SearchByName(const char *name) {
-    std::vector<CustomBook> tmp = book_table.FileSearchByName(BookStr(name));
+    std::vector<BookInfo> tmp = book_table.FileSearchByName(BookStr(name));
     if (tmp.empty()) {
         std::cout << '\n';
         return;
@@ -1684,7 +1698,7 @@ void BookSystem::SearchByName(const char *name) {
 }
 
 void BookSystem::SearchByAuthor(const char *author) {
-    std::vector<CustomBook> tmp =
+    std::vector<BookInfo> tmp =
         book_table.FileSearchByAuthor(BookStr(author));
     if (tmp.empty()) {
         std::cout << '\n';
@@ -1696,7 +1710,7 @@ void BookSystem::SearchByAuthor(const char *author) {
 }
 
 void BookSystem::SearchByKeyword(const char *keyword) {
-    std::vector<CustomBook> tmp =
+    std::vector<BookInfo> tmp =
         book_table.FileSearchByKeyword(BookStr(keyword));
     if (tmp.empty()) {
         std::cout << '\n';
@@ -1708,38 +1722,38 @@ void BookSystem::SearchByKeyword(const char *keyword) {
 }
 
 void BookSystem::SearchAll() {
-    std::set<CustomBook> tmp = book_table.search();
+    std::set<BookInfo> tmp = book_table.search();
     if (tmp.empty()) {
         std::cout << '\n';
         return;
     }
-    for (const CustomBook &tmp_book : tmp)
+    for (const BookInfo &tmp_book : tmp)
         tmp_book.PrintInfo();
     return;
 }
 
 void BookSystem::output() { book_table.output(); }
 
-void BookSystem::AddBook(const char *isbn, const CustomBook &data) {
-    if (!book_table.insert(IsbnStr(isbn), data))
+void BookSystem::AddBook(const char *isbn, const BookInfo &data) {
+    if (!book_table.insert(IsbnStr(isbn), data).second)
         throw InvalidException("Insert a book that already exists");
     return;
 }
 
 void BookSystem::BuyBook(const char *isbn, const int quantity) {
-    double res = book_table.dec_quantity(IsbnStr(isbn), quantity);
-    if (res == -1.0)
+    auto res = book_table.buy(IsbnStr(isbn), quantity);
+    if (!res.second)
         throw InvalidException("Not found the book or no enough book!");
-    res *= quantity;
-    std::cout << res << '\n';
-    total_earn.push_back(total_earn.back() + res);
+    res.first *= quantity;
+    std::cout << res.first << '\n';
+    total_earn.push_back(total_earn.back() + res.first);
     total_cost.push_back(total_cost.back());
 }
 
 void BookSystem::ImportBook(const int book_pos, const int quantity,
                             const double cost) {
 
-    if (!book_table.inc_quantity(book_pos, quantity, cost))
+    if (!book_table.import(book_pos, quantity, cost).second)
         throw InvalidException("Not found the book to import");
     total_earn.push_back(total_earn.back());
     total_cost.push_back(total_cost.back() + cost);
@@ -1787,7 +1801,8 @@ class Bookstore : public user::UserSystem, public book::BookSystem {
 
 #endif
 
-#include <new>
+
+#include <cctype>
 #include <string>
 #include <utility>
 
@@ -1798,6 +1813,14 @@ Bookstore::Bookstore() {
 }
 Bookstore::~Bookstore() {
     // TODO
+}
+
+bool validate(const std::string str) {
+    for (const char &ch : str) {
+        if (!(isalpha(ch) || isdigit(ch) || ch == '_'))
+            return false;
+    }
+    return true;;
 }
 
 std::pair<int, bool> str_to_int(const std::string str) {
@@ -1813,8 +1836,12 @@ std::pair<int, bool> str_to_int(const std::string str) {
 std::pair<double, bool> str_to_double(const std::string str) {
     double tcost1 = 0, tcost2 = 0, tcost_div = 1.0;
     bool dot_flag = 0;
+    if (str[0] == '.' || str[str.size() - 1] == '.')
+        return std::make_pair(0.0, 0);
     for (const char &ch : str) {
-        if (ch == '.' && !dot_flag) {
+        if (ch == '.') {
+            if (dot_flag)
+                return std::make_pair(0.0, 0);
             dot_flag = 1;
             continue;
         }
@@ -1839,6 +1866,10 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     if (msg.func == QUIT)
         throw NormalException(QUIT_SYSTEM);
     if (msg.func == SU) {
+        if (!validate(msg.args[0]) || !validate(msg.args[1]))
+            throw InvalidException("?");
+        if (msg.args[0].size() > 30 || msg.args[1].size() > 30)
+            throw InvalidException("Check Length");
         UserSystem::UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
         return;
     }
@@ -1847,21 +1878,46 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == REG) {
+        if (!validate(msg.args[0]) || !validate(msg.args[1]))
+            throw InvalidException("?");
+        if (msg.args[0].size() > 30 || msg.args[1].size() > 30)
+            throw InvalidException("Check Length");
         UserSystem::UserRegister(msg.args[0].c_str(), msg.args[2].c_str(),
                                  msg.args[1].c_str());
         return;
     }
     if (msg.func == PASSWD) {
+        if (!validate(msg.args[0]) || !validate(msg.args[1]) || !validate(msg.args[2]))
+            throw InvalidException("?");
+        if (msg.args[0].size() > 30 || msg.args[1].size() > 30 || msg.args[2].size() > 30)
+            throw InvalidException("Check Length");
         UserSystem::ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(),
                                    msg.args[2].c_str());
         return;
     }
     if (msg.func == USERADD) {
+        int priv;
+        if (!validate(msg.args[0]) || !validate(msg.args[1]))
+            throw InvalidException("?");
+        if (msg.args[0].size() > 30 || msg.args[1].size() > 30)
+            throw InvalidException("Check Length");
+        if (msg.args[2] == "1")
+            priv = 1;
+        else if (msg.args[2] == "3")
+            priv = 3;
+        else if (msg.args[2] == "7")
+            priv = 7;
+        else
+            throw InvalidException("Check privilege");
         UserSystem::UserAdd(msg.args[0].c_str(), msg.args[3].c_str(),
                             msg.args[1].c_str(), std::stoi(msg.args[2]));
         return;
     }
     if (msg.func == DEL) {
+        if (!validate(msg.args[0]))
+            throw InvalidException("?");
+        if (msg.args[0].size() > 30)
+            throw InvalidException("Check Length");
         UserSystem::UserErase(msg.args[0].c_str());
         return;
     }
@@ -1870,24 +1926,32 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SHOW_ISBN) {
+        if (!msg.args[0].size() || msg.args[0].size() > 20)
+            throw InvalidException("Check Length");
         BookSystem::SearchByISBN(msg.args[0].c_str());
         return;
     }
     if (msg.func == SHOW_NAME) {
+        if (!msg.args[0].size() || msg.args[0].size() > 60)
+            throw InvalidException("Check Length");
         BookSystem::SearchByName(msg.args[0].c_str());
         return;
     }
     if (msg.func == SHOW_AUTHOR) {
+        if (!msg.args[0].size() || msg.args[0].size() > 60)
+            throw InvalidException("Check Length");
         BookSystem::SearchByAuthor(msg.args[0].c_str());
         return;
     }
     if (msg.func == SHOW_KEYWORD) {
-        if (msg.args[0].find('|') != std::string::npos)
+        if (!msg.args[0].size() || msg.args[0].find('|') != std::string::npos)
             throw InvalidException("More than one keywords in show");
         BookSystem::SearchByKeyword(msg.args[0].c_str());
         return;
     }
     if (msg.func == BUY) {
+        if (msg.args[0].size() > 20)
+            throw InvalidException("Check Length");
         std::pair<int, bool> quan = str_to_int(msg.args[1]);
         if (!quan.first || !quan.second)
             throw InvalidException("Buy: Number error");
@@ -1895,6 +1959,8 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SEL) {
+        if (msg.args[0].size() > 20)
+            throw InvalidException("Check Length");
         int book_pos = BookSystem::SelectBook(msg.args[0].c_str());
         UserSystem::SelectBook(book_pos);
         return;
@@ -1903,18 +1969,38 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         int book_pos = UserSystem::GetBook();
         if (UserSystem::GetBook() == 0)
             throw InvalidException("Modify a book before selecting it");
+        if (msg.args[0].size() > 20 || msg.args[1].size() > 60 || msg.args[2].size() > 60 || msg.args[3].size() > 60 || msg.args[4].size() > 13)
+            throw InvalidException("Check length");
         std::pair<double, bool> price = str_to_double(msg.args[4]);
         if (!price.second)
             throw InvalidException("Modify: Number error");
+        if (msg.args[3][msg.args[3].size() - 1] == '|')
+            throw InvalidException("?");
+        BookstoreLexer key_div_str(msg.args[3], '|');
+        std::set<std::string> key_div_set;
+        std::vector<char *> key_div;
+        key_div.resize(key_div_str.size());
+        int siz = 0;
+        for (std::string str : key_div_str) {
+            if (!str.size())
+                throw InvalidException("Check length");
+            key_div[siz] = new char[65];
+            strcpy(key_div[siz], str.c_str());
+            siz++;
+            if (!key_div_set.insert(str).second)
+                throw InvalidException("Modify: duplicated keyword");
+        }
         BookSystem::ModifyBook(book_pos, msg.args[0].c_str(),
                                msg.args[1].c_str(), msg.args[2].c_str(),
-                               msg.args[3].c_str(), price.first);
+                               key_div, siz, price.first);
         return;
     }
     if (msg.func == IMPORT) {
+        if (msg.args[0].size() > 10 || msg.args[1].size() > 13)
+            throw InvalidException("Check length");
         std::pair<int, bool> quan = str_to_int(msg.args[0]);
         std::pair<double, bool> tot_cost = str_to_double(msg.args[1]);
-        if (!quan.second || !tot_cost.second)
+        if (!quan.second || !tot_cost.second || !tot_cost.first)
             throw InvalidException("Import: Number error");
         BookSystem::ImportBook(UserSystem::GetBook(), quan.first,
                                tot_cost.first);
@@ -1943,6 +2029,7 @@ void Bookstore::output() {
 
 } // namespace bookstore
 
+
 #include <iostream>
 
 
@@ -1952,19 +2039,60 @@ using bookstore::input::BookstoreParser;
 
 int output_status = 0;
 
+void PrintHelp() {
+    std::cout
+        << "Bookstore 0.2 (Powered by Conless Pan, December 2022)\n"
+        << "usage: (program name) [--show-status | -s] [--inherit-data | -i] "
+           "[--help | -h] ...\n"
+        << "Options and arguments (and corresponding environment variables:\n"
+        << "\t--show-status, -s\t The option of printing the data.\n"
+        << "\t\t0 (default)\t Running mode: only show standard output.\n"
+        << "\t\t1\t\t Debugging mode: output the information of input.\n"
+        << "\t\t2\t\t Showing mode: output all the data.\n"
+        << "\t--inherit-data, -i\t The option of inheriting the data.\n"
+        << "\t\t0\t\t Non-inheriting mode: do not inherit the recent data.\n"
+        << "\t\t1 (default)\t Inheriting mode: inherit the recent data.\n"
+        << "\t--help, -h\t\t Output helping information.\n";
+}
+
 void JudgeInput(int argc, char *argv[]) {
     std::ios::sync_with_stdio(false);
     std::cout.setf(std::ios::fixed);
     std::cout.precision(2);
     for (int i = 1; i < argc; i++) {
-        if (!strcmp(argv[i], "--show-status=0"))
-            output_status = 0;
-        else if (!strcmp(argv[i], "--show-status=1"))
-            output_status = 1;
-        else if (!strcmp(argv[i], "--show-status=2"))
-            output_status = 2;
-        else if (!strcmp(argv[i], "--inherit-data=0"))
-            std::filesystem::remove_all("data");
+        BookstoreLexer argv_div(argv[i], '=');
+        bool err_flag = 0;
+        if (argv_div[0] == "--help" || argv_div[0] == "-h") {
+            PrintHelp();
+            exit(0);
+        } else if (argv_div[0] == "--show-status" || argv_div[0] == "-s") {
+            if (argv_div.size() != 2)
+                err_flag = 1;
+            else if (argv_div[1] == "0")
+                output_status = 0;
+            else if (argv_div[1] == "1")
+                output_status = 1;
+            else if (argv_div[1] == "2")
+                output_status = 2;
+            else
+                err_flag = 1;
+        } else if (argv_div[0] == "--inherit-data" || argv_div[0] == "-i") {
+            if (argv_div.size() != 2)
+                err_flag = 1;
+            else if (argv_div[1] == "0")
+                std::filesystem::remove_all("data");
+            else if (argv_div[1] == "1")
+                ;
+            else
+                err_flag = 1;
+        } else
+            err_flag = 1;
+        if (err_flag) {
+            std::cerr << "Unexpected input parameters of " << argv_div[0]
+                      << '\n';
+            PrintHelp();
+            exit(-1);
+        }
     }
     return;
 }
@@ -1972,33 +2100,27 @@ void JudgeInput(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     JudgeInput(argc, argv);
     Bookstore root;
-        std::string input;
-    while (
-        getline(std::cin, input)) {
+    std::string input;
+    while (getline(std::cin, input)) {
         try {
             BookstoreLexer token(input);
             BookstoreParser msg(token);
             root.AcceptMsg(msg);
             if (output_status)
                 std::cout << "Valid\n";
-        } catch (NormalException(QUIT_SYSTEM)) {
-            break;
+        } catch (const NormalException &msg) {
+            if (msg.what() == QUIT_SYSTEM)
+                break;
+            if (msg.what() == EMPTY_INPUT)
+                continue;
         } catch (const InvalidException &msg) {
             std::cout << "Invalid";
             if (output_status)
                 std::cout << ": " << msg.details();
             std::cout << '\n';
-        } catch (const UnknownException &msg) {
-            std::cout << msg.details() << '\n';
-            if (msg.what() != INPUT)
-                while (true);
-            std::cout << "Invalid";
-            if (output_status)
-                std::cout << ": " << msg.details();
-            std::cout << '\n';
         } catch (...) {
-            while (true);
-            std::cout << "?";
+            std::cout << "Invalid";
+            std::cout << '\n';
         }
         if (output_status == 2)
             root.output();

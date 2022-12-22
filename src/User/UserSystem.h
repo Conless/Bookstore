@@ -82,7 +82,7 @@ class UserSystem {
     void output();
 
   private:
-    std::stack<std::pair<BookstoreUser, int>> user_stack;
+    std::vector<std::pair<BookstoreUser, int>> user_stack;
     UserFileSystem user_table;
 };
 

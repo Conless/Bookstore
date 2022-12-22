@@ -80,20 +80,19 @@ int main(int argc, char *argv[]) {
             root.AcceptMsg(msg);
             if (output_status)
                 std::cout << "Valid\n";
-        } catch (NormalException(QUIT_SYSTEM)) {
-            break;
+        } catch (const NormalException &msg) {
+            if (msg.what() == QUIT_SYSTEM)
+                break;
+            if (msg.what() == EMPTY_INPUT)
+                continue;
         } catch (const InvalidException &msg) {
             std::cout << "Invalid";
             if (output_status)
                 std::cout << ": " << msg.details();
             std::cout << '\n';
-        } catch (const UnknownException &msg) {
-            std::cout << "Invalid";
-            if (output_status)
-                std::cout << ": " << msg.details();
-            std::cout << '\n';
         } catch (...) {
-            std::cout << "?";
+            std::cout << "Invalid";
+            std::cout << '\n';
         }
         if (output_status == 2)
             root.output();

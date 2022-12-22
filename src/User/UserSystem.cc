@@ -10,12 +10,11 @@ namespace bookstore {
 namespace user {
 
 const BookstoreUser UserRoot = {"root", "root", "sjtu", 7};
-const BookstoreUser UserGuest = {"DarkBluntness", "BrightSharpness",
-                                 "BrightBluntness", 0};
+const BookstoreUser UserGuest = {"Conmore", "Conmost",
+                                 "Conleast", 0};
 
 UserFileSystem::UserFileSystem()
-    : BaseFileSystem("user"), uid_table("uid"), siz(0) {
-}
+    : BaseFileSystem("user"), uid_table("uid"), siz(0) {}
 
 bool UserFileSystem::insert(const UserStr &uid, const BookstoreUser &data) {
     try {
@@ -80,7 +79,9 @@ BookstoreUser UserFileSystem::find(const UserStr &uid) {
 void UserFileSystem::output() {
     for (int i = 1; i <= siz; i++) {
         BookstoreUser user = BaseFileSystem::find(i);
-        std::cout << "ID=" << user.id.str << " Name=" << user.name.str << " Passwd=" << user.pswd.str << " Iden=" << user.iden << '\n';
+        std::cout << "ID=" << user.id.str << " Name=" << user.name.str
+                  << " Passwd=" << user.pswd.str << " Iden=" << user.iden
+                  << '\n';
     }
 }
 
@@ -88,9 +89,11 @@ UserSystem::UserSystem() {
     std::ifstream fin("./data/user.log");
     if (fin.good())
         fin >> user_table.siz;
-    user_table.insert(UserRoot.id, UserRoot);
-    user_table.insert(UserGuest.id, UserGuest);
-    user_stack.push(std::make_pair(UserGuest, 0));
+    else {
+        user_table.insert(UserRoot.id, UserRoot);
+        user_table.insert(UserGuest.id, UserGuest);
+    }
+    user_stack.push_back(std::make_pair(UserGuest, 0));
 }
 
 UserSystem::~UserSystem() {
@@ -107,29 +110,28 @@ void UserSystem::UserRegister(const char *user_id, const char *user_name,
 }
 
 void UserSystem::UserLogin(const char *user_id, const char *user_pswd) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
-        throw UnknownException(UNKNOWN, "Not found such data");
+        throw InvalidException("Not found such data");
     if ((cur.iden > tmp.iden && !strcmp(user_pswd, "")) ||
         user_pswd == tmp.pswd)
-        user_stack.push(std::make_pair(tmp, 0));
+        user_stack.push_back(std::make_pair(tmp, 0));
     else
         throw InvalidException("Wrong password!");
 }
 void UserSystem::UserLogout() {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     if (cur == UserGuest)
         throw InvalidException("You've logout all the accounts");
-    user_stack.pop();
+    user_stack.pop_back();
 }
 void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
                                 const char *new_pswd) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
-        throw UnknownException(
-            UNKNOWN, "Not found such user when modifying the password.");
+        throw InvalidException("Not found such user when modifying the password.");
     if ((cur.iden == 7 && !strcmp(cur_pswd, "")) || cur_pswd == tmp.pswd) {
         tmp.pswd = UserStr(new_pswd);
         user_table.edit(tmp.id, tmp);
@@ -138,7 +140,7 @@ void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
 }
 void UserSystem::UserAdd(const char *user_id, const char *user_name,
                          const char *user_pswd, const int iden) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp(user_id, user_name, user_pswd, iden);
     if (cur.iden <= iden)
         throw InvalidException(
@@ -147,7 +149,10 @@ void UserSystem::UserAdd(const char *user_id, const char *user_name,
         throw InvalidException("The uid to be added already exists.");
 }
 void UserSystem::UserErase(const char *user_id) {
-    BookstoreUser cur = user_stack.top().first;
+    BookstoreUser cur = user_stack.back().first;
+    for (auto dt : user_stack)
+        if (dt.first.id == user_id)
+            throw InvalidException("Deleting a login user");
     BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
         throw InvalidException("Not found user when erasing");
@@ -158,15 +163,15 @@ void UserSystem::UserErase(const char *user_id) {
 }
 
 void UserSystem::SelectBook(const int book_pos) {
-    user_stack.top().second = book_pos;
+    user_stack.back().second = book_pos;
 }
 
-int UserSystem::GetIdentity() const { return user_stack.top().first.iden; }
+int UserSystem::GetIdentity() const { return user_stack.back().first.iden; }
 
 int UserSystem::GetBook() const {
-    if (user_stack.top().first == UserGuest)
+    if (user_stack.back().first == UserGuest)
         return 0;
-    return user_stack.top().second;
+    return user_stack.back().second;
 }
 
 void UserSystem::output() {
