@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <utility>
 
 #include "Utils/Exception.h"
 #include "Utils/TokenScanner.h"
@@ -13,10 +14,10 @@ namespace bookstore {
 
 namespace book {
 
-CustomBook::CustomBook()
+BookInfo::BookInfo()
     : isbn(), name(), author(), keyword_cnt(0), quantity(0), price(0.0) {}
 
-CustomBook::CustomBook(const char *_isbn, const char *_name,
+BookInfo::BookInfo(const char *_isbn, const char *_name,
                        const char *_author, const std::vector<char *> &_keyword,
                        const int _keyword_cnt, const double _price)
     : isbn(_isbn), name(_name), author(_author), keyword_cnt(_keyword_cnt), price(_price) {
@@ -24,7 +25,7 @@ CustomBook::CustomBook(const char *_isbn, const char *_name,
         keyword[i] = _keyword[i];
 }
 
-void CustomBook::PrintInfo() const {
+void BookInfo::PrintInfo() const {
     std::cout << isbn.str << '\t' << name.str << '\t' << author.str << '\t';
     for (int i = 0; i < keyword_cnt; i++) {
         if (i)
@@ -38,7 +39,7 @@ BookFileSystem::BookFileSystem()
     : BaseFileSystem("book"), isbn_table("isbn"), name_table("name"),
       author_table("author"), key_table("key"), siz(0) {}
 
-int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
+std::pair<int, bool> BookFileSystem::insert(const IsbnStr &isbn, const BookInfo &data) {
     try {
         isbn_table.insert(isbn, siz + 1);
         siz++;
@@ -47,10 +48,10 @@ int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
         for (int i = 0; i < data.keyword_cnt; i++)
             key_table.insert(data.keyword[i], siz);
         BaseFileSystem::insert(siz, data);
-        return siz;
+        return std::make_pair(siz, true);
     } catch (const NormalException &x) {
-        if (x.what() == ULL_NOT_FOUND)
-            return 0;
+        if (x.what() == ULL_INSERTED)
+            return std::make_pair(isbn_table.find(isbn), false);
         else {
             x.error();
             exit(-1);
@@ -58,19 +59,19 @@ int BookFileSystem::insert(const IsbnStr &isbn, const CustomBook &data) {
     }
 }
 
-bool BookFileSystem::erase(const IsbnStr &isbn) {
+std::pair<int, bool> BookFileSystem::erase(const IsbnStr &isbn) {
     try {
         int pos = isbn_table.erase(isbn);
-        CustomBook tmp = BaseFileSystem::find(pos);
+        BookInfo tmp = BaseFileSystem::find(pos);
         name_table.erase(tmp.name, pos);
         author_table.erase(tmp.author, pos);
         for (int i = 0; i < tmp.keyword_cnt; i++)
             key_table.erase(tmp.keyword[i], siz);
         BaseFileSystem::erase(pos);
-        return 1;
+        return std::make_pair(pos, true);
     } catch (const NormalException &x) {
         if (x.what() == ULL_ERASE_NOT_FOUND)
-            return 0;
+            return std::make_pair(0, false);
         else {
             x.error();
             exit(-1);
@@ -78,27 +79,12 @@ bool BookFileSystem::erase(const IsbnStr &isbn) {
     }
 }
 
-bool BookFileSystem::edit(const IsbnStr &isbn, CustomBook data) {
-    int pos;
-    try {
-        pos = isbn_table.find(isbn);
-    } catch (const NormalException &x) {
-        if (x.what() == ULL_NOT_FOUND)
-            return 0;
-        else {
-            x.error();
-            exit(-1);
-        }
-    }
-    return edit(pos, data);
-}
-
-bool BookFileSystem::edit(const int pos, CustomBook data) {
-    CustomBook tmp = BaseFileSystem::find(pos);
+std::pair<int, bool> BookFileSystem::edit(const int pos, BookInfo data) {
+    BookInfo tmp = BaseFileSystem::find(pos);
     if (!data.isbn.empty()) {
         try {
             isbn_table.find(data.isbn);
-            return 0;
+            return std::make_pair(pos, false);
         } catch (const NormalException &x) {
             if (x.what() == ULL_NOT_FOUND) {
                 isbn_table.erase(tmp.isbn);
@@ -132,33 +118,33 @@ bool BookFileSystem::edit(const int pos, CustomBook data) {
         tmp.price = data.price;
     BaseFileSystem::erase(pos);
     BaseFileSystem::insert(pos, tmp);
-    return 1;
+    return std::make_pair(pos, true);
 }
 
-bool BookFileSystem::inc_quantity(const int pos, const int quantity,
+std::pair<double, bool> BookFileSystem::import(const int pos, const int quantity,
                                   const double cost) {
     if (!pos)
         throw InvalidException("Import a book before select it");
-    CustomBook tmp = BaseFileSystem::find(pos);
+    BookInfo tmp = BaseFileSystem::find(pos);
     tmp.quantity += quantity;
     BaseFileSystem::erase(pos);
     BaseFileSystem::insert(pos, tmp);
-    return 1;
+    return std::make_pair(cost, true);
 }
 
-double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
+std::pair<double, bool> BookFileSystem::buy(const IsbnStr &isbn, const int quantity) {
     try {
         int pos = isbn_table.find(isbn);
-        CustomBook tmp = BaseFileSystem::find(pos);
+        BookInfo tmp = BaseFileSystem::find(pos);
         if (tmp.quantity < quantity)
-            return -1.0;
+            return std::make_pair(0.0, false);
         tmp.quantity -= quantity;
         BaseFileSystem::erase(pos);
         BaseFileSystem::insert(pos, tmp);
-        return tmp.price;
+        return std::make_pair(tmp.price, true);
     } catch (const NormalException &x) {
         if (x.what() == ULL_NOT_FOUND)
-            return -1;
+            return std::make_pair(0.0, false);
         else {
             x.error();
             exit(-1);
@@ -166,15 +152,15 @@ double BookFileSystem::dec_quantity(const IsbnStr &isbn, const int quantity) {
     }
 }
 
-CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
+BookInfo BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
     try {
         int pos = isbn_table.find(isbn);
-        CustomBook ret = BaseFileSystem::find(pos);
+        BookInfo ret = BaseFileSystem::find(pos);
         ret.pos = pos;
         return ret;
     } catch (const NormalException &x) {
         if (x.what() == ULL_NOT_FOUND)
-            return CustomBook();
+            return BookInfo();
         else {
             x.error();
             exit(-1);
@@ -182,9 +168,9 @@ CustomBook BookFileSystem::FileSearchByISBN(const IsbnStr &isbn) {
     }
 }
 
-std::vector<CustomBook> BookFileSystem::FileSearchByName(const BookStr &name) {
+std::vector<BookInfo> BookFileSystem::FileSearchByName(const BookStr &name) {
     std::vector<int> pos = name_table.find(name);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -192,10 +178,10 @@ std::vector<CustomBook> BookFileSystem::FileSearchByName(const BookStr &name) {
     return ret;
 }
 
-std::vector<CustomBook>
+std::vector<BookInfo>
 BookFileSystem::FileSearchByAuthor(const BookStr &author) {
     std::vector<int> pos = author_table.find(author);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -203,10 +189,10 @@ BookFileSystem::FileSearchByAuthor(const BookStr &author) {
     return ret;
 }
 
-std::vector<CustomBook>
+std::vector<BookInfo>
 BookFileSystem::FileSearchByKeyword(const BookStr &keyword) {
     std::vector<int> pos = key_table.find(keyword);
-    std::vector<CustomBook> ret;
+    std::vector<BookInfo> ret;
     ret.clear();
     for (auto p : pos)
         ret.push_back(BaseFileSystem::find(p));
@@ -217,7 +203,7 @@ BookFileSystem::FileSearchByKeyword(const BookStr &keyword) {
 void BookFileSystem::output() {
     std::cout << "Book status:\n";
     for (int i = 1; i <= siz; i++) {
-        CustomBook tmp = BaseFileSystem::find(i);
+        BookInfo tmp = BaseFileSystem::find(i);
         tmp.PrintInfo();
     }
     std::cout << '\n';
@@ -247,12 +233,9 @@ BookSystem::~BookSystem() {
 }
 
 int BookSystem::SelectBook(const char *isbn) {
-    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
-    if (tmp.empty()) {
-        tmp.isbn = isbn;
-        return book_table.insert(IsbnStr(isbn), tmp);
-    } else
-        return tmp.pos;
+    BookInfo tmp;
+    tmp.isbn = isbn;
+    return book_table.insert(IsbnStr(isbn), tmp).first;
 }
 void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,
@@ -260,12 +243,12 @@ void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
     if (!book_pos)
         throw InvalidException("Modify a book before selecting it");
     if (!book_table.edit(book_pos,
-                         CustomBook(_isbn, _name, _author, _key, _key_cnt, _price)))
+                         BookInfo(_isbn, _name, _author, _key, _key_cnt, _price)).second)
         throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
 }
 
 void BookSystem::SearchByISBN(const char *isbn) {
-    CustomBook tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
+    BookInfo tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
     if (tmp.empty()) {
         std::cout << '\n';
         return;
@@ -274,7 +257,7 @@ void BookSystem::SearchByISBN(const char *isbn) {
 }
 
 void BookSystem::SearchByName(const char *name) {
-    std::vector<CustomBook> tmp = book_table.FileSearchByName(BookStr(name));
+    std::vector<BookInfo> tmp = book_table.FileSearchByName(BookStr(name));
     if (tmp.empty()) {
         std::cout << '\n';
         return;
@@ -285,7 +268,7 @@ void BookSystem::SearchByName(const char *name) {
 }
 
 void BookSystem::SearchByAuthor(const char *author) {
-    std::vector<CustomBook> tmp =
+    std::vector<BookInfo> tmp =
         book_table.FileSearchByAuthor(BookStr(author));
     if (tmp.empty()) {
         std::cout << '\n';
@@ -297,7 +280,7 @@ void BookSystem::SearchByAuthor(const char *author) {
 }
 
 void BookSystem::SearchByKeyword(const char *keyword) {
-    std::vector<CustomBook> tmp =
+    std::vector<BookInfo> tmp =
         book_table.FileSearchByKeyword(BookStr(keyword));
     if (tmp.empty()) {
         std::cout << '\n';
@@ -309,38 +292,38 @@ void BookSystem::SearchByKeyword(const char *keyword) {
 }
 
 void BookSystem::SearchAll() {
-    std::set<CustomBook> tmp = book_table.search();
+    std::set<BookInfo> tmp = book_table.search();
     if (tmp.empty()) {
         std::cout << '\n';
         return;
     }
-    for (const CustomBook &tmp_book : tmp)
+    for (const BookInfo &tmp_book : tmp)
         tmp_book.PrintInfo();
     return;
 }
 
 void BookSystem::output() { book_table.output(); }
 
-void BookSystem::AddBook(const char *isbn, const CustomBook &data) {
-    if (!book_table.insert(IsbnStr(isbn), data))
+void BookSystem::AddBook(const char *isbn, const BookInfo &data) {
+    if (!book_table.insert(IsbnStr(isbn), data).second)
         throw InvalidException("Insert a book that already exists");
     return;
 }
 
 void BookSystem::BuyBook(const char *isbn, const int quantity) {
-    double res = book_table.dec_quantity(IsbnStr(isbn), quantity);
-    if (res == -1.0)
+    auto res = book_table.buy(IsbnStr(isbn), quantity);
+    if (!res.second)
         throw InvalidException("Not found the book or no enough book!");
-    res *= quantity;
-    std::cout << res << '\n';
-    total_earn.push_back(total_earn.back() + res);
+    res.first *= quantity;
+    std::cout << res.first << '\n';
+    total_earn.push_back(total_earn.back() + res.first);
     total_cost.push_back(total_cost.back());
 }
 
 void BookSystem::ImportBook(const int book_pos, const int quantity,
                             const double cost) {
 
-    if (!book_table.inc_quantity(book_pos, quantity, cost))
+    if (!book_table.import(book_pos, quantity, cost).second)
         throw InvalidException("Not found the book to import");
     total_earn.push_back(total_earn.back());
     total_cost.push_back(total_cost.back() + cost);
