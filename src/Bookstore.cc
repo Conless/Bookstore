@@ -111,7 +111,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         else
             throw InvalidException("Check privilege");
         UserSystem::UserAdd(msg.args[0].c_str(), msg.args[3].c_str(),
-                            msg.args[1].c_str(), std::stoi(msg.args[2]));
+                            msg.args[1].c_str(), priv);
         return;
     }
     if (msg.func == DEL) {
