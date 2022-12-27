@@ -4,7 +4,6 @@
 
 # CMake build files
 build/
-./code
 
 # Input files
 samples/
@@ -12,3 +11,4 @@ samples/
 # Output files
 bin/
 lib/
+data/

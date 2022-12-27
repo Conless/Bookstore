@@ -26,6 +26,10 @@ bool validate(const std::string str) {
 
 std::pair<int, bool> str_to_int(const std::string str) {
     int num = 0;
+    if (str.size() > 10)
+        return std::make_pair(0, 0);
+    if (str.size() != 1 && str[0] == '0')
+        return std::make_pair(0, 0);
     for (const char &ch : str) {
         if (ch < '0' || ch > '9')
             return std::make_pair(0, 0);
@@ -37,7 +41,9 @@ std::pair<int, bool> str_to_int(const std::string str) {
 std::pair<double, bool> str_to_double(const std::string str) {
     double tcost1 = 0, tcost2 = 0, tcost_div = 1.0;
     bool dot_flag = 0;
-    if (str[0] == '.' || str[str.size() - 1] == '.')
+    if (str.size() > 13)
+        return std::make_pair(0.0, 0);
+    if ((str[0] == '0' &&  str[1] != '.') || str[0] == '.' || str[str.size() - 1] == '.')
         return std::make_pair(0.0, 0);
     for (const char &ch : str) {
         if (ch == '.') {
@@ -145,7 +151,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SHOW_KEYWORD) {
-        if (!msg.args[0].size() || msg.args[0].find('|') != std::string::npos)
+        if (!msg.args[0].size() || msg.args[0].size() > 60 || msg.args[0].find('|') != std::string::npos)
             throw InvalidException("More than one keywords in show");
         BookSystem::SearchByKeyword(msg.args[0].c_str());
         return;
@@ -168,7 +174,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     }
     if (msg.func == MODIFY) {
         int book_pos = UserSystem::GetBook();
-        if (UserSystem::GetBook() == 0)
+        if (!book_pos)
             throw InvalidException("Modify a book before selecting it");
         if (msg.args[0].size() > 20 || msg.args[1].size() > 60 || msg.args[2].size() > 60 || msg.args[3].size() > 60 || msg.args[4].size() > 13)
             throw InvalidException("Check length");
@@ -201,7 +207,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
             throw InvalidException("Check length");
         std::pair<int, bool> quan = str_to_int(msg.args[0]);
         std::pair<double, bool> tot_cost = str_to_double(msg.args[1]);
-        if (!quan.second || !tot_cost.second || !tot_cost.first)
+        if (!quan.first || !quan.second || !tot_cost.first || !tot_cost.second)
             throw InvalidException("Import: Number error");
         BookSystem::ImportBook(UserSystem::GetBook(), quan.first,
                                tot_cost.first);

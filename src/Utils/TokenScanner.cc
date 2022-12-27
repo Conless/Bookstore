@@ -36,12 +36,17 @@ BookstoreLexer::BookstoreLexer(std::string str_in_line, char divide_opt) {
     SimplifySpace(str_in_line);
     int las = 0;
     int siz = str_in_line.size();
-    for (int i = 0; i < siz; i++) {
-        if (!isprint(str_in_line[i]))
+    for (const char &ch : str_in_line)
+        if (!isprint(ch))
             throw InvalidException("Invisible char");
+    for (int i = 0; i < siz; i++) {
         if (str_in_line[i] == divide_opt) {
             push_back(str_in_line.substr(las, i - las));
             las = i + 1;
+            if (divide_opt == '=' && las < str_in_line.size()) {
+                push_back(str_in_line.substr(las, str_in_line.size() - las));
+                return;
+            }
         } else if (i == siz - 1) {
             push_back(str_in_line.substr(las, i - las + 1));
         }
@@ -141,6 +146,8 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             *this = BookstoreParser(FINANCE, input_str);
 
         } else {
+            if (input.size() > 2)
+                throw InvalidException("Show message followed with more than one parameters.");
             BookstoreLexer input_div(input[1], '=');
             if (input_div.size() != 2)
                 throw InvalidException(
@@ -194,65 +201,65 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         *this = BookstoreParser(SEL, input_str);
         return;
     }
-    // if (input[0] == "modify") {
-    //     if (input.size() < 2)
-    //         throw InvalidException("Modify with no parameters");
-    //     int siz = input.size();
-    //     input_str.resize(5);
-    //     input_str[0] = input_str[1] = input_str[2] = input_str[3] =
-    //         input_str[4] = "";
-    //     for (int i = 1; i < siz; i++) {
-    //         BookstoreLexer input_div(input[i], '=');
-    //         if (input_div.size() != 2)
-    //             throw InvalidException(
-    //                 "Modify message followed with unexpected parameters.");
-    //         if (!input_div[1].size())
-    //             throw InvalidException("No parameters");
-    //         int opt;
-    //         if (input_div[0] == "-ISBN")
-    //             opt = 0;
-    //         else if (input_div[0] == "-name")
-    //             opt = 1;
-    //         else if (input_div[0] == "-author")
-    //             opt = 2;
-    //         else if (input_div[0] == "-keyword")
-    //             opt = 3;
-    //         else if (input_div[0] == "-price")
-    //             opt = 4;
-    //         else
-    //             throw InvalidException(
-    //                 "Modify message followed with unexpected parameters.");
-    //         if (input_str[opt] != "")
-    //             throw InvalidException("Repeated modify parameters");
-    //         if (opt != 0 && opt != 4) {
-    //             if (input_div[1].size() <= 2)
-    //                 throw InvalidException("No parameters");
-    //             if (input_div[1][0] != '\"')
-    //                 throw InvalidException("Quotation mark not found");
-    //             else
-    //                 input_div[1].erase(0, 1);
-    //             if (input_div[1][input_div[1].size() - 1] != '\"')
-    //                 throw InvalidException("Quotation mark not found");
-    //             else
-    //                 input_div[1].erase(input_div[1].size() - 1, 1);
-    //             // if (input_div[1].size() <= 2 || input_div[1][0] != '\"' ||
-    //             //     input_div[1][input_div[1].size() - 1] != '\"')
-    //             //     throw InvalidException("Quotation not found");
-    //             // input_div[1].erase(0, 1);
-    //             // input_div[1].erase(input_div[1].size() - 1, 1);
-    //             if (input_div[1].find('\"') != std::string::npos)
-    //                 throw InvalidException("Quotation mark not allowed");
+    if (input[0] == "modify") {
+        if (input.size() < 2)
+            throw InvalidException("Modify with no parameters");
+        int siz = input.size();
+        input_str.resize(5);
+        input_str[0] = input_str[1] = input_str[2] = input_str[3] =
+            input_str[4] = "";
+        for (int i = 1; i < siz; i++) {
+            BookstoreLexer input_div(input[i], '=');
+            if (input_div.size() != 2)
+                throw InvalidException(
+                    "Modify message followed with unexpected parameters.");
+            if (!input_div[1].size())
+                throw InvalidException("No parameters");
+            int opt;
+            if (input_div[0] == "-ISBN")
+                opt = 0;
+            else if (input_div[0] == "-name")
+                opt = 1;
+            else if (input_div[0] == "-author")
+                opt = 2;
+            else if (input_div[0] == "-keyword")
+                opt = 3;
+            else if (input_div[0] == "-price")
+                opt = 4;
+            else
+                throw InvalidException(
+                    "Modify message followed with unexpected parameters.");
+            if (input_str[opt] != "")
+                throw InvalidException("Repeated modify parameters");
+            if (opt != 0 && opt != 4) {
+                if (input_div[1].size() <= 2)
+                    throw InvalidException("No parameters");
+                if (input_div[1][0] != '\"')
+                    throw InvalidException("Quotation mark not found");
+                else
+                    input_div[1].erase(0, 1);
+                if (input_div[1][input_div[1].size() - 1] != '\"')
+                    throw InvalidException("Quotation mark not found");
+                else
+                    input_div[1].erase(input_div[1].size() - 1, 1);
+                // if (input_div[1].size() <= 2 || input_div[1][0] != '\"' ||
+                //     input_div[1][input_div[1].size() - 1] != '\"')
+                //     throw InvalidException("Quotation not found");
+                // input_div[1].erase(0, 1);
+                // input_div[1].erase(input_div[1].size() - 1, 1);
+                if (input_div[1].find('\"') != std::string::npos)
+                    throw InvalidException("Quotation mark not allowed");
                 
-    //             // if (input_div[1].find('\"') != std::string::npos)
-    //             //     throw InvalidException("Quotation mark not allowed");
-    //         }
-    //         if (!input_div.size())
-    //             throw InvalidException("Check length");
-    //         input_str[opt] = input_div[1];
-    //     }
-    //     *this = BookstoreParser(MODIFY, input_str);
-    //     return;
-    // }
+                // if (input_div[1].find('\"') != std::string::npos)
+                //     throw InvalidException("Quotation mark not allowed");
+            }
+            if (!input_div.size())
+                throw InvalidException("Check length");
+            input_str[opt] = input_div[1];
+        }
+        *this = BookstoreParser(MODIFY, input_str);
+        return;
+    }
     if (input[0] == "import") {
         if (input.size() != 3)
             throw InvalidException(

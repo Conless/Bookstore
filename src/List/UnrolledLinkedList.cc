@@ -107,7 +107,6 @@ void UnrolledLinkedList<kMaxKeyLen>::insert(const KeyType<kMaxKeyLen> &key,
         free_blocks.erase(1);
         insert(blocks[1], tmp);
     } else {
-        int len = blocks.size() - 1;
         int pos = 0;
         for (int i = 1; i <= len; i++) {
             if (tmp <= blocks[i].tail) { // Find the block to insert into

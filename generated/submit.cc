@@ -150,14 +150,17 @@ BookstoreLexer::BookstoreLexer(std::string str_in_line, char divide_opt) {
     SimplifySpace(str_in_line);
     int las = 0;
     int siz = str_in_line.size();
-    for (int i = 0; i < siz; i++) {
-        if (!isprint(str_in_line[i]))
+    for (const char &ch : str_in_line)
+        if (!isprint(ch))
             throw InvalidException("Invisible char");
+    for (int i = 0; i < siz; i++) {
         if (str_in_line[i] == divide_opt) {
-            if (i && str_in_line[i - 1] == divide_opt)
-                throw InvalidException("?");
             push_back(str_in_line.substr(las, i - las));
             las = i + 1;
+            if (divide_opt == '=' && las < str_in_line.size()) {
+                push_back(str_in_line.substr(las, str_in_line.size() - las));
+                return;
+            }
         } else if (i == siz - 1) {
             push_back(str_in_line.substr(las, i - las + 1));
         }
@@ -168,7 +171,6 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     if (!input.size())
         throw NormalException(EMPTY_INPUT);
     BookstoreLexer input_str;
-    input_str.clear();
     if (input[0] == "exit" || input[0] == "quit") {
         if (input.size() != 1)
             throw InvalidException(
@@ -258,9 +260,9 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             *this = BookstoreParser(FINANCE, input_str);
 
         } else {
+            if (input.size() > 2)
+                throw InvalidException("Show message followed with more than one parameters.");
             BookstoreLexer input_div(input[1], '=');
-            if (input[1][input[1].size() - 1] == '=')
-                throw InvalidException("?");
             if (input_div.size() != 2)
                 throw InvalidException(
                     "Show message followed with unexpected parameters.");
@@ -270,6 +272,16 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             if (input_div[0] == "-ISBN")
                 *this = BookstoreParser(SHOW_ISBN, input_str);
             else {
+                if (input_div[1].size() <= 2)
+                    throw InvalidException("No parameters");
+                if (input_div[1][0] != '\"')
+                    throw InvalidException("Quotation mark not found");
+                else
+                    input_div[1].erase(0, 1);
+                if (input_div[1][input_div[1].size() - 1] != '\"')
+                    throw InvalidException("Quotation mark not found");
+                else
+                    input_div[1].erase(input_div[1].size() - 1, 1);
                 if (input_div[1].find('\"') != std::string::npos)
                     throw InvalidException("Quotation mark not allowed");
                 input_str[0] = input_div[1];
@@ -311,8 +323,6 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
         input_str[0] = input_str[1] = input_str[2] = input_str[3] =
             input_str[4] = "";
         for (int i = 1; i < siz; i++) {
-            if (input[i][input[i].size() - 1] == '=')
-                throw InvalidException("?");
             BookstoreLexer input_div(input[i], '=');
             if (input_div.size() != 2)
                 throw InvalidException(
@@ -761,7 +771,6 @@ void UnrolledLinkedList<kMaxKeyLen>::insert(const KeyType<kMaxKeyLen> &key,
         free_blocks.erase(1);
         insert(blocks[1], tmp);
     } else {
-        int len = blocks.size() - 1;
         int pos = 0;
         for (int i = 1; i <= len; i++) {
             if (tmp <= blocks[i].tail) { // Find the block to insert into
@@ -1702,7 +1711,6 @@ void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
 void BookSystem::SearchByISBN(const char *isbn) {
     BookInfo tmp = book_table.FileSearchByISBN(IsbnStr(isbn));
     if (tmp.empty()) {
-        // exit(-1);
         std::cout << '\n';
         return;
     }
@@ -1848,6 +1856,10 @@ bool validate(const std::string str) {
 
 std::pair<int, bool> str_to_int(const std::string str) {
     int num = 0;
+    if (str.size() > 10)
+        return std::make_pair(0, 0);
+    if (str.size() != 1 && str[0] == '0')
+        return std::make_pair(0, 0);
     for (const char &ch : str) {
         if (ch < '0' || ch > '9')
             return std::make_pair(0, 0);
@@ -1859,7 +1871,9 @@ std::pair<int, bool> str_to_int(const std::string str) {
 std::pair<double, bool> str_to_double(const std::string str) {
     double tcost1 = 0, tcost2 = 0, tcost_div = 1.0;
     bool dot_flag = 0;
-    if (str[0] == '.' || str[str.size() - 1] == '.')
+    if (str.size() > 13)
+        return std::make_pair(0.0, 0);
+    if ((str[0] == '0' &&  str[1] != '.') || str[0] == '.' || str[str.size() - 1] == '.')
         return std::make_pair(0.0, 0);
     for (const char &ch : str) {
         if (ch == '.') {
@@ -1945,15 +1959,12 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SHOW_ALL) {
-        // BookSystem::SearchAll();
+        BookSystem::SearchAll();
         return;
     }
     if (msg.func == SHOW_ISBN) {
-        if (!msg.args[0].size())
+        if (!msg.args[0].size() || msg.args[0].size() > 20)
             throw InvalidException("Check Length");
-        if (msg.args[0].size() > 20)
-            return;
-            // throw InvalidException("Check Length");
         BookSystem::SearchByISBN(msg.args[0].c_str());
         return;
     }
@@ -1970,7 +1981,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         return;
     }
     if (msg.func == SHOW_KEYWORD) {
-        if (!msg.args[0].size() || msg.args[0].find('|') != std::string::npos)
+        if (!msg.args[0].size() || msg.args[0].size() > 60 || msg.args[0].find('|') != std::string::npos)
             throw InvalidException("More than one keywords in show");
         BookSystem::SearchByKeyword(msg.args[0].c_str());
         return;
@@ -1993,7 +2004,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     }
     if (msg.func == MODIFY) {
         int book_pos = UserSystem::GetBook();
-        if (UserSystem::GetBook() == 0)
+        if (!book_pos)
             throw InvalidException("Modify a book before selecting it");
         if (msg.args[0].size() > 20 || msg.args[1].size() > 60 || msg.args[2].size() > 60 || msg.args[3].size() > 60 || msg.args[4].size() > 13)
             throw InvalidException("Check length");
@@ -2026,7 +2037,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
             throw InvalidException("Check length");
         std::pair<int, bool> quan = str_to_int(msg.args[0]);
         std::pair<double, bool> tot_cost = str_to_double(msg.args[1]);
-        if (!quan.second || !tot_cost.second || !tot_cost.first)
+        if (!quan.first || !quan.second || !tot_cost.first || !tot_cost.second)
             throw InvalidException("Import: Number error");
         BookSystem::ImportBook(UserSystem::GetBook(), quan.first,
                                tot_cost.first);
@@ -2045,7 +2056,7 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     if (msg.func == LOG) {
         return;
     }
-    // throw InvalidException("Bookstore does NOT support this operation.");
+    throw InvalidException("Bookstore does NOT support this operation.");
 }
 
 void Bookstore::output() {
