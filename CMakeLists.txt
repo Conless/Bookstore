@@ -10,18 +10,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # Main sources
 include_directories(${PROJECT_SOURCE_DIR}/src)
-# add_subdirectory(src)
+add_subdirectory(src)
 
 # Test
 # add_subdirectory(test)
-
-file(GLOB SRC_LIST
-    src/*.cc
-    src/Book/*.cc
-    src/File/*.cc
-    src/List/*.cc
-    src/Utils/*.cc
-    src/User/*.cc
-)
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR})
-add_executable(code ${SRC_LIST})

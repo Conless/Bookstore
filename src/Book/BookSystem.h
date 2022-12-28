@@ -25,7 +25,7 @@ class BookInfo {
   public:
     BookInfo();
     explicit BookInfo(const char *_isbn) : BookInfo() { isbn = _isbn; }
-    explicit BookInfo(const char *_isbn, const char *_name, const char *_author, const std::vector<char*> &_keyword, const int _keyword_cnt, const double _price);
+    explicit BookInfo(const char *_isbn, const char *_name, const char *_author, const std::vector<BookStr> &_keyword, const double _price);
 
     void PrintInfo() const;
     bool operator<(const BookInfo &x) const { return isbn < x.isbn; }
@@ -84,7 +84,7 @@ class BookSystem {
 
     void BuyBook(const char *isbn, const int quantity);
 
-    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const std::vector<char *> &_key, const int _key_cnt, const double _price);
+    void ModifyBook(const int book_pos, const char *_isbn, const char *_name, const char *_author, const std::vector<BookStr> &_key, const double _price);
     void ImportBook(const int book_pos, const int quantity, const double cost);
 
     void ShowFinance(const int rev = -1);

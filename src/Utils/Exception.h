@@ -34,6 +34,12 @@ class BaseException {
     std::string msg;
 };
 
+class InputException : public BaseException {
+  public:
+    InputException(const std::string &_msg)
+        : BaseException(STD_INVALID, _msg + "message followed with unexpected parameters.") {}
+};
+
 class NormalException : public BaseException {
   public:
     NormalException(const ExceptionType &_opt) : BaseException(_opt, "") {}

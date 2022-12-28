@@ -17,11 +17,11 @@ namespace book {
 BookInfo::BookInfo()
     : isbn(), name(), author(), keyword_cnt(0), quantity(0), price(0.0) {}
 
-BookInfo::BookInfo(const char *_isbn, const char *_name,
-                       const char *_author, const std::vector<char *> &_keyword,
-                       const int _keyword_cnt, const double _price)
-    : isbn(_isbn), name(_name), author(_author), keyword_cnt(_keyword_cnt), price(_price) {
-    for (int i = 0; i < keyword_cnt; i++)
+BookInfo::BookInfo(const char *_isbn, const char *_name, const char *_author,
+                   const std::vector<BookStr> &_keyword, const double _price)
+    : isbn(_isbn), name(_name), author(_author), price(_price) {
+    keyword_cnt = _keyword.size();
+    for (int i = 0; i < _keyword.size(); i++)
         keyword[i] = _keyword[i];
 }
 
@@ -39,7 +39,8 @@ BookFileSystem::BookFileSystem()
     : BaseFileSystem("book"), isbn_table("isbn"), name_table("name"),
       author_table("author"), key_table("key"), siz(0) {}
 
-std::pair<int, bool> BookFileSystem::insert(const IsbnStr &isbn, const BookInfo &data) {
+std::pair<int, bool> BookFileSystem::insert(const IsbnStr &isbn,
+                                            const BookInfo &data) {
     try {
         isbn_table.insert(isbn, siz + 1);
         siz++;
@@ -114,15 +115,15 @@ std::pair<int, bool> BookFileSystem::edit(const int pos, BookInfo data) {
         memcpy(tmp.keyword, data.keyword, sizeof(data.keyword));
         tmp.keyword_cnt = data.keyword_cnt;
     }
-    if (data.price)
+    if (data.price != -1)
         tmp.price = data.price;
     BaseFileSystem::erase(pos);
     BaseFileSystem::insert(pos, tmp);
     return std::make_pair(pos, true);
 }
 
-std::pair<double, bool> BookFileSystem::import(const int pos, const int quantity,
-                                  const double cost) {
+std::pair<double, bool>
+BookFileSystem::import(const int pos, const int quantity, const double cost) {
     if (!pos)
         throw InvalidException("Import a book before select it");
     BookInfo tmp = BaseFileSystem::find(pos);
@@ -132,7 +133,8 @@ std::pair<double, bool> BookFileSystem::import(const int pos, const int quantity
     return std::make_pair(cost, true);
 }
 
-std::pair<double, bool> BookFileSystem::buy(const IsbnStr &isbn, const int quantity) {
+std::pair<double, bool> BookFileSystem::buy(const IsbnStr &isbn,
+                                            const int quantity) {
     try {
         int pos = isbn_table.find(isbn);
         BookInfo tmp = BaseFileSystem::find(pos);
@@ -228,8 +230,7 @@ BookSystem::~BookSystem() {
     int len = total_earn.size();
     fout << book_table.siz << ' ' << len << '\n';
     for (int i = 0; i < len; i++)
-        fout << std::setprecision(20) << total_earn[i] << ' ' << total_cost[i]
-             << '\n';
+        fout << total_earn[i] << ' ' << total_cost[i] << '\n';
 }
 
 int BookSystem::SelectBook(const char *isbn) {
@@ -242,12 +243,14 @@ int BookSystem::SelectBook(const char *isbn) {
 }
 void BookSystem::ModifyBook(const int book_pos, const char *_isbn,
                             const char *_name, const char *_author,
-                            const std::vector<char *> &_key, const int _key_cnt, const double _price) {
+                            const std::vector<BookStr> &_key,
+                            const double _price) {
     if (!book_pos)
         throw InvalidException("Modify a book before selecting it");
-    if (!book_table.edit(book_pos,
-                         BookInfo(_isbn, _name, _author, _key, _key_cnt, _price)).second)
-        throw UnknownException(UNKNOWN, "Modify a book that does not exist.");
+    if (!book_table
+             .edit(book_pos, BookInfo(_isbn, _name, _author, _key, _price))
+             .second)
+        throw InvalidException("ISBN exists.");
 }
 
 void BookSystem::SearchByISBN(const char *isbn) {
@@ -271,8 +274,7 @@ void BookSystem::SearchByName(const char *name) {
 }
 
 void BookSystem::SearchByAuthor(const char *author) {
-    std::vector<BookInfo> tmp =
-        book_table.FileSearchByAuthor(BookStr(author));
+    std::vector<BookInfo> tmp = book_table.FileSearchByAuthor(BookStr(author));
     if (tmp.empty()) {
         std::cout << '\n';
         return;

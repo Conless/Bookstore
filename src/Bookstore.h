@@ -20,6 +20,9 @@ class Bookstore : public user::UserSystem, public book::BookSystem {
     void output();
 };
 
+void PrintHelp();
+int JudgeInput(int argc, char *argv[]);
+
 } // namespace bookstore
 
 #endif

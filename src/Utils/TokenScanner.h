@@ -29,8 +29,6 @@ enum Function {
     LOG
 };
 
-int to_authentity(const Function &func);
-
 class BookstoreLexer : public std::vector<std::string> {
   public:
     BookstoreLexer() {}
