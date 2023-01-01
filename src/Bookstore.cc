@@ -1,5 +1,6 @@
 #include "Bookstore.h"
 
+#include "Log/LogSystem.h"
 #include "User/UserSystem.h"
 #include "Utils/Exception.h"
 
@@ -121,29 +122,33 @@ bool validate(const std::string &str) {
 
 void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
     using namespace input;
-    if (UserSystem::GetIdentity() < to_authentity(msg.func))
+    std::pair<std::string, int> cur, tmp;
+    cur = std::make_pair(UserSystem::GetName(), UserSystem::GetIdentity());
+    if (cur.second < to_authentity(msg.func))
         throw InvalidException("Check authority");
     if (msg.func == QUIT) {
         throw NormalException(QUIT_SYSTEM);
     } else if (msg.func == SU) {
         UserSystem::UserLogin(msg.args[0].c_str(), msg.args[1].c_str());
+        tmp = std::make_pair(UserSystem::GetName(), UserSystem::GetIdentity());
     } else if (msg.func == LOGOUT) {
         UserSystem::UserLogout();
-    }
-    if (msg.func == REG) {
+    } else if (msg.func == REG) {
         UserSystem::UserRegister(msg.args[0].c_str(), msg.args[2].c_str(),
                                  msg.args[1].c_str());
-    }
-    if (msg.func == PASSWD) {
-        UserSystem::ModifyPassword(msg.args[0].c_str(), msg.args[1].c_str(),
-                                   msg.args[2].c_str());
+        tmp = std::make_pair(msg.args[0], 1);
+    } else if (msg.func == PASSWD) {
+        int ret = UserSystem::ModifyPassword(
+            msg.args[0].c_str(), msg.args[1].c_str(), msg.args[2].c_str());
+        tmp = std::make_pair(msg.args[0], ret);
     } else if (msg.func == USERADD) {
         UserSystem::UserAdd(msg.args[0].c_str(), msg.args[3].c_str(),
                             msg.args[1].c_str(), std::stoi(msg.args[2]));
+        tmp = std::make_pair(msg.args[0], std::stoi(msg.args[2]));
     } else if (msg.func == DEL) {
-        UserSystem::UserErase(msg.args[0].c_str());
-    }
-    if (msg.func == FINANCE) {
+        int ret = UserSystem::UserErase(msg.args[0].c_str());
+        tmp = std::make_pair(msg.args[0], ret);
+    } else if (msg.func == FINANCE) {
         if (msg.args.size()) {
             BookSystem::ShowFinance(std::stoi(msg.args[0]));
         } else
@@ -192,11 +197,10 @@ void Bookstore::AcceptMsg(const input::BookstoreParser &msg) {
         BookSystem::ImportBook(UserSystem::GetBook(), std::stoi(msg.args[0]),
                                str_to_double(msg.args[1]));
     } else if (msg.func == LOG) {
-        system("cp data/Bookstore.log ./");
-        system("vi -M Bookstore.log");
-        return;
-    }
-    throw InvalidException("Bookstore does NOT support this operation.");
+        system("cat data/Bookstore.log");
+    } else
+        throw InvalidException("Bookstore does NOT support this operation.");
+    LogSystem::WriteLog(cur, tmp, msg);
 }
 
 void Bookstore::output() {

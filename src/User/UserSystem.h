@@ -69,14 +69,15 @@ class UserSystem {
                       const char *user_pswd);
     void UserLogin(const char *user_id, const char *user_pswd);
     void UserLogout();
-    void ModifyPassword(const char *user_id, const char *cur_pswd,
+    int ModifyPassword(const char *user_id, const char *cur_pswd,
                         const char *new_pswd);
     void UserAdd(const char *user_id, const char *user_name,
                  const char *user_pswd, const int user_iden);
-    void UserErase(const char *user_id);
+    int UserErase(const char *user_id);
     void SelectBook(const int book_pos);
     int GetBook() const;
     int GetIdentity() const;
+    std::string GetName() const;
 
   protected:
     void output();

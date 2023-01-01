@@ -55,6 +55,7 @@ template <size_t kMaxKeyLen> class KeyType {
     bool operator!=(const KeyType &x) const { return !(*this == x); }
     bool operator<=(const KeyType &x) const { return !(*this > x); }
     bool operator>=(const KeyType &x) const { return !(*this < x); }
+    operator std::string() const { return std::string(str); }
 
   public:
     char str[kMaxKeyLen];
@@ -122,10 +123,15 @@ template <size_t kMaxKeyLen> class UnrolledLinkedList {
     bool empty() const;
 
     // Operations
-    void insert(const char *key, const int value) { insert
-    (KeyType<kMaxKeyLen>(key), value); }
-    void erase(const char *key, const int value) { erase(KeyType<kMaxKeyLen>(key), value); }
-    std::vector<int> find(const char *key) { return find(KeyType<kMaxKeyLen>(key)); }
+    void insert(const char *key, const int value) {
+        insert(KeyType<kMaxKeyLen>(key), value);
+    }
+    void erase(const char *key, const int value) {
+        erase(KeyType<kMaxKeyLen>(key), value);
+    }
+    std::vector<int> find(const char *key) {
+        return find(KeyType<kMaxKeyLen>(key));
+    }
 
     // Operations of custom string
     void insert(const KeyType<kMaxKeyLen> &key, const int value);

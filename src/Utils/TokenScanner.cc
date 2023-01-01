@@ -260,7 +260,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "modify") {
         if (input.size() < 2)
-            throw InvalidException("Modify with no parameters");
+            throw InputException(input[0]);
         int siz = input.size();
         input_str.resize(5);
         input_str[0] = input_str[1] = input_str[2] = input_str[3] =
@@ -270,7 +270,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             if (input_div.size() != 2)
                 throw InputException(input[0]);
             if (!input_div[1].size())
-                throw InvalidException("No parameters");
+                throw InputException(input[0]);
             int opt;
             if (input_div[0] == "-ISBN")
                 opt = 0;
@@ -285,7 +285,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
             else
                 throw InputException(input[0]);
             if (input_str[opt] != "")
-                throw InvalidException("Repeated modify parameters");
+                throw InputException(input[0]);
             if (opt == 0) {
                 if (!ValidateBookISBN(input_div[1]))
                     throw InputException(input[0]);
@@ -294,7 +294,7 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
                     throw InputException(input[0]);
             } else {
                 if (input_div[1].size() <= 2)
-                    throw InvalidException("No parameters");
+                    throw InputException(input[0]);
                 if (!ValidateQuotation(input_div[1]) ||
                     !ValidateBookInfo(input_div[1]))
                     throw InputException(input[0]);
@@ -308,13 +308,18 @@ BookstoreParser::BookstoreParser(const BookstoreLexer &input) {
     }
     if (input[0] == "import") {
         if (input.size() != 3)
-            throw InvalidException(
-                "Import message followed with unexpected parameters.");
+            throw InputException(input[0]);
         if (!ValidatePosInt(input[1]) || !ValidatePosDouble(input[2]))
             throw InputException(input[0]);
         input_str.push_back(input[1]);
         input_str.push_back(input[2]);
         *this = BookstoreParser(IMPORT, input_str);
+        return;
+    }
+    if (input[0] == "log") {
+        if (input.size() != 1)
+            throw InputException(input[0]);
+        *this = BookstoreParser(LOG, input_str);
         return;
     }
     throw InvalidException("Sorry, bookstore doesn't support this operation.");

@@ -7,6 +7,7 @@ file(GLOB SRC_LIST
     List/*.cc
     Utils/*.cc
     User/*.cc
+    Log/*.cc
 )
 
 set(CMAKE_CXX_FLAGS "-g -std=c++17")

@@ -126,7 +126,7 @@ void UserSystem::UserLogout() {
         throw InvalidException("You've logout all the accounts");
     user_stack.pop_back();
 }
-void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
+int UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
                                 const char *new_pswd) {
     BookstoreUser cur = user_stack.back().first;
     BookstoreUser tmp = user_table.find(UserStr(user_id));
@@ -137,6 +137,7 @@ void UserSystem::ModifyPassword(const char *user_id, const char *cur_pswd,
         user_table.edit(tmp.id, tmp);
     } else
         throw InvalidException("Wrong password when modifying the password.");
+    return tmp.iden;
 }
 void UserSystem::UserAdd(const char *user_id, const char *user_name,
                          const char *user_pswd, const int iden) {
@@ -148,18 +149,19 @@ void UserSystem::UserAdd(const char *user_id, const char *user_name,
     if (!user_table.insert(UserStr(user_id), tmp))
         throw InvalidException("The uid to be added already exists.");
 }
-void UserSystem::UserErase(const char *user_id) {
+int UserSystem::UserErase(const char *user_id) {
     BookstoreUser cur = user_stack.back().first;
+    BookstoreUser tmp = user_table.find(UserStr(user_id));
     for (auto dt : user_stack)
         if (dt.first.id == user_id)
             throw InvalidException("Deleting a login user");
-    BookstoreUser tmp = user_table.find(UserStr(user_id));
     if (tmp.empty())
         throw InvalidException("Not found user when erasing");
     if (cur.iden <= tmp.iden)
         throw InvalidException(
             "The identity should be senior when erasing a user.");
     user_table.erase(UserStr(user_id));
+    return tmp.iden;
 }
 
 void UserSystem::SelectBook(const int book_pos) {
@@ -172,6 +174,10 @@ int UserSystem::GetBook() const {
     if (user_stack.back().first == UserGuest)
         return 0;
     return user_stack.back().second;
+}
+
+std::string UserSystem::GetName() const {
+    return std::string(user_stack.back().first.id);
 }
 
 void UserSystem::output() {

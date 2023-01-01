@@ -3,13 +3,14 @@
 
 #include "Book/BookSystem.h"
 #include "User/UserSystem.h"
+#include "Log/LogSystem.h"
 
 #include "Utils/TokenScanner.h"
 #include <vector>
 
 namespace bookstore {
 
-class Bookstore : public user::UserSystem, public book::BookSystem {
+class Bookstore : public user::UserSystem, public book::BookSystem, public log::LogSystem {
   public:
     Bookstore();
     ~Bookstore();
