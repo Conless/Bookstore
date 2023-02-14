@@ -15,6 +15,8 @@ typedef std::pair<std::string, int> UserData;
 class LogSystem {
   public:
     LogSystem();
+    void WriteInput(const std::string &str);
+    void WriteInvalid(const std::string &str);
     void WriteLog(const UserData &cur, const UserData &tmp, const bookstore::input::BookstoreParser &msg);
 
   private:

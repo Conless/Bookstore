@@ -52,9 +52,7 @@ Printer& operator<<(Printer &out, const UserData &user) {
     return out;
 }
 
-void LogSystem::WriteLog(const UserData &cur, const UserData &tmp, 
-                         const bookstore::input::BookstoreParser &msg) {
-    using namespace input;
+void LogSystem::WriteInput(const std::string &str) {
     time_t raw_time;
     struct tm *time_info;
     time(&raw_time);
@@ -67,6 +65,20 @@ void LogSystem::WriteLog(const UserData &cur, const UserData &tmp,
     fout << ':';
     fout << std::setw(2) << std::setfill('0') << time_info->tm_sec;
     fout << "] ";
+    fout.Reset();
+    fout << "> " << str << '\n';
+}
+
+void LogSystem::WriteInvalid(const std::string &str) {
+    fout.SetColor(RED);
+    fout << "\33[4m\33[1m\33[5mError: ";
+    fout << str << "!!!\n";
+    fout.Reset();
+}
+
+void LogSystem::WriteLog(const UserData &cur, const UserData &tmp, 
+                         const bookstore::input::BookstoreParser &msg) {
+    using namespace input;
     if (msg.func == SU) {
         fout << tmp << " login.";
     } else if (msg.func == LOGOUT) {
@@ -105,7 +117,17 @@ void LogSystem::WriteLog(const UserData &cur, const UserData &tmp,
     } else if (msg.func == SEL) {
         fout << cur << " select book with ISBN " << msg.args[0] << ".";
     } else if (msg.func == MODIFY) {
-        fout << cur << " modify the selected book.";
+        fout << cur << " modify the selected book into ";
+        if (msg.args[0] != "")
+            fout << "-ISBN=" << msg.args[0] << " ";
+        if (msg.args[1] != "")
+            fout << "-name=" << msg.args[1] << " ";
+        if (msg.args[2] != "")
+            fout << "-author=" << msg.args[2] << " ";
+        if (msg.args[3] != "")
+            fout << "-key=" << msg.args[3] << " ";
+        if (msg.args[4] != "")
+            fout << "-price=" << msg.args[4] << " ";
     } else if (msg.func == IMPORT) {
         fout << cur << " import " << msg.args[0] << " selected book";
         if (msg.args[0] != "1")

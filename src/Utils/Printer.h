@@ -4,6 +4,7 @@
 #include <fstream>
 
 enum Color {
+    BLACK = 30,
     RED = 31,
     GREEN = 32,
     YELLOW = 33,

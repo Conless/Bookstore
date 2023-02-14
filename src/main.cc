@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
     Bookstore root;
     std::string input;
     while (getline(std::cin, input)) {
+        root.WriteInput(input);
         try {
             input::BookstoreLexer token(input);
             input::BookstoreParser msg(token);
@@ -24,15 +25,11 @@ int main(int argc, char *argv[]) {
             if (msg.what() == EMPTY_INPUT)
                 continue;
         } catch (const InputException &msg) {
-            std::cout << "Invalid";
-            if (output_status)
-                std::cout << ": " << msg.details();
-            std::cout << '\n';
+            root.WriteInvalid(msg.details());
+            std::cout << "Invalid" << (output_status ? ":" + msg.details() : "") << "\n";
         } catch (const InvalidException &msg) {
-            std::cout << "Invalid";
-            if (output_status)
-                std::cout << ": " << msg.details();
-            std::cout << '\n';
+            root.WriteInvalid(msg.details());
+            std::cout << "Invalid" << (output_status ? ":" + msg.details() : "") << "\n";
         } catch (...) {
             std::cout << "Program exited after throwing an unexpected error.\n";
             return -1;
